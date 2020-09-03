@@ -25,6 +25,15 @@ namespace MathLibrary
 			return data[i];
 		}
 
+		vector<n>& operator=(const vector<n>& rhs)
+		{
+			for (int i = 0; i < n; ++i)
+			{
+				this->data[i] = rhs[i];
+			}
+			return *this;
+		}
+
 		double norm2()const
 		{
 			return (*this) * (*this);
@@ -65,6 +74,17 @@ namespace MathLibrary
 		for (int i = 0; i < n; ++i)
 		{
 			ret[i] /= rhs;
+		}
+		return ret;
+	}
+
+	template<int n>
+	vector<n> operator-(const vector<n>& lhs, const vector<n>& rhs)
+	{
+		vector<n> ret = lhs;
+		for (int i = 0; i < n; ++i)
+		{
+			ret[i] -= rhs[i];
 		}
 		return ret;
 	}
