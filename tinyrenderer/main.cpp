@@ -2,12 +2,16 @@
 #include <iostream>
 #include <vector>
 
-const int width = 800;
-const int height = 600;
+#include "MathLibrary.h"
+
+constexpr int width = 800;
+constexpr int height = 600;
 
 int main(int argc, char** argv)
 {
     std::vector<double> zbuffer(width * height, -std::numeric_limits<double>::max());
+    MathLibrary::vector<3> v;
+    std::cout << v.norm2() << std::endl;
 
     return 0;
 }
