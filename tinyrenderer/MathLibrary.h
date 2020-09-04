@@ -169,5 +169,47 @@ namespace MathLibrary
 			return *this;
 		}
 	};
+/////////////////////////////////////////////////////////////////////////////////
+	template<>
+	class vector<2>
+	{
+	private:
+		double x{}, y{};
+	public:
+		vector(double X,double Y)
+			:x(X),y(Y)
+		{}
+		vector() = default;
+		double& operator[](const int i)
+		{
+			assert(i >= 0 && i < 2);
+			return i == 0 ? x : y;
+		}
+
+		double operator[](const int i)const
+		{
+			assert(i >= 0 && i < 2);
+			return i == 0 ? x : y;
+		}
+
+		double norm2()const
+		{
+			return (*this) * (*this);
+		}
+
+		double norm()const
+		{
+			return std::sqrt(norm2());
+		}
+
+		vector& normalize()
+		{
+			*this = (*this) / norm();
+			return *this;
+		}
+	};
+/////////////////////////////////////////////////////////////////////////////////
+
+
 }
 
