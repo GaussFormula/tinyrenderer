@@ -208,8 +208,150 @@ namespace MathLibrary
 			return *this;
 		}
 	};
-/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
+	template<int nrows,int ncols>
+	class Matrix
+	{
+	private:
+		vector<ncols> rows[nrows]{ {} };
+
+
+	public:
+		Matrix() = default;
+		vector<ncols>& operator[](const int index)
+		{
+			assert(index >= 0 && index < nrows);
+			return rows[index];
+		}
+
+		const vector<ncols>& operator[](const int index)
+		{
+			assert(index >= 0 && index < nrows);
+			return rows[index];
+		}
+
+		vector<nrows> col(const int index)
+		{
+			assert(index >= 0 && index < ncols);
+			vector<nrows> ret;
+			for (int i = 0; i < nrows; ++i)
+			{
+				ret[i] = rows[i][index];
+			}
+		}
+
+		void setColumn(const int index, const vector<nrows>& v)
+		{
+			assert(index >= 0 && index < ncols);
+			for (int i = 0; i < nrows; ++i)
+			{
+				rows[i][i] = v[i];
+			}
+		}
+
+		static Matrix<nrows, ncols> identity()
+		{
+			Matrix<nrows, ncols> ret;
+			for (int i = 0; i < nrows; ++i)
+			{
+				for (int j = 0; i < ncols; ++j)
+				{
+					ret[i][j] = (i == j);
+				}
+			}
+		}
+
+		Matrix<nrows - 1, ncols - 1> getMinor(const int row, const int col)const
+		{
+			Matrix<nrows - 1, ncols - 1>ret;
+			for (int i = 0; i < nrows - 1; ++i)
+			{
+				for (int j = 0; j < ncols - 1; ++j)
+				{
+					ret[i][j] = rows[i < row ? i : i + 1][j < col ? j : j + 1];
+				}
+			}
+			return ret;
+		}
+
+		double cofactor(const int row, const int col)const
+		{
+			return det(getMinor(row, col)) * ((row + col) % 2 ? -1 : 1);
+		}
+
+		Matrix<nrows, ncols> adjugate()const
+		{
+			Matrix<nrows, ncols> ret;
+			for (int i = 0; i < nrows; ++i)
+			{
+				for (int j = 0; j < ncols; ++j)
+				{
+					ret[i][j] = cofactor(i, j);
+				}
+			}
+			return ret;
+		}
+
+		Matrix<nrows, ncols> invertTranspose()const
+		{
+			Matrix<nrows, ncols> ret = adjugate();
+			return ret / (ret[0] * rows[0]);
+		}
+
+		Matrix<nrows, ncols> invert()const
+		{
+			return invertTranspose().transpose();
+		}
+
+		Matrix<nrows, ncols> transpose()const
+		{
+			Matrix<nrows, ncols> ret;
+			for (int i = 0; i < nrows; ++i)
+			{
+				ret[i] = this->col(i);
+			}
+			return ret;
+		}
+
+		Matrix<nrows, ncols> operator*(const vector<ncols>& rhs)
+		{
+			vector<nrows> ret;
+			for (int i = 0; i < nrows; ++i)
+			{
+				ret[i] = rows[i] * rhs;
+			}
+			return ret;
+		}
+
+		Matrix<nrows, ncols> operator/(const double& val)
+		{
+			Matrix<nrows, ncols> result;
+			for (int i = 0; i < nrows; ++i)
+			{
+				result[i] = rows[i] / val;
+			}
+			return result;
+		}
+	};
+
+	template<int n>
+	static double det(const Matrix<n, n>& src)
+	{
+		if (n == 1)
+		{
+			return src[0][0];
+		}
+		else
+		{
+            double ret = 0;
+            for (int i = 0; i < n; ++i)
+            {
+                ret += src[0][i] * src.cofactor(0, i);
+            }
+			return ret;
+		}
+	}
 
 }
 
