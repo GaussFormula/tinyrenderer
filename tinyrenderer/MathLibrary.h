@@ -57,6 +57,17 @@ namespace MathLibrary
     }
 
 	template<int n>
+	vector<n> operator*(const double& lhs, const vector<n>& rhs)
+	{
+		vector<n> ret = rhs;
+		for (int i = 0; i < n; ++i)
+		{
+			ret[i] *= lhs * ret[i];
+		}
+		return ret;
+	}
+
+	template<int n>
 	vector<n> operator+(const vector<n>& lhs, const vector<n>& rhs)
 	{
 		vector<n> ret = lhs;
@@ -89,6 +100,39 @@ namespace MathLibrary
 		return ret;
 	}
 
+	template<int n1,int n2>
+	vector<n1> embed(const vector<n2>& v, double fill = 1)
+	{
+		vector<n1> ret;
+		for (int i = 0; i < n1; ++i)
+		{
+			ret[i] = i < n2 ? v[i] : fill;
+		}
+		return ret;
+	}
+
+	template<int n1,int n2>
+	vector<n1> proj(const vector<n2>& v)
+	{
+		vector<n1> ret;
+		for (int i = 0; i < n1; ++i)
+		{
+			ret[i] = v[i];
+		}
+		return ret;
+	}
+
+	template<int n>
+	std::ostream& operator<<(std::ostream& out, const vector<n>& v)
+	{
+		for (int i = 0; i < n; ++i)
+		{
+			out << v[i] << " ";
+		}
+		out << std::endl;
+		return out;
+	}
+/////////////////////////////////////////////////////////////////////////////////
 	template<>
 	class vector<3>
 	{
