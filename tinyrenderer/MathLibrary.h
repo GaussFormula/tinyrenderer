@@ -313,27 +313,43 @@ namespace MathLibrary
 			}
 			return ret;
 		}
-
-		Matrix<nrows, ncols> operator*(const vector<ncols>& rhs)
-		{
-			vector<nrows> ret;
-			for (int i = 0; i < nrows; ++i)
-			{
-				ret[i] = rows[i] * rhs;
-			}
-			return ret;
-		}
-
-		Matrix<nrows, ncols> operator/(const double& val)
-		{
-			Matrix<nrows, ncols> result;
-			for (int i = 0; i < nrows; ++i)
-			{
-				result[i] = rows[i] / val;
-			}
-			return result;
-		}
 	};
+
+	template<int nrows,int ncols>
+    vector<nrows> operator*(const Matrix<nrows,ncols>&lhs,const vector<ncols>& rhs)
+    {
+        vector<nrows> ret;
+        for (int i = 0; i < nrows; ++i)
+        {
+            ret[i] = lhs[i] * rhs;
+        }
+        return ret;
+    }
+
+	template<int R1,int C1,int C2>
+	Matrix<R1, C2> operator*(const Matrix<R1, C1>& lhs, const Matrix<C1, C2>& rhs)
+	{
+		Matrix<R1, C2> result;
+		for (int i = 0; i < R1; ++i)
+		{
+			for (int j = 0; j < C2; ++j)
+			{
+				result[i][j] = lhs[i] * rhs.col(j);
+			}
+		}
+		return result;
+	}
+
+	template<int nrows, int ncols>
+    Matrix<nrows, ncols> operator/(const Matrix<nrows,ncols> lhs,const double& val)
+    {
+        Matrix<nrows, ncols> result;
+        for (int i = 0; i < nrows; ++i)
+        {
+            result[i] = lhs[i] / val;
+        }
+        return result;
+    }
 
 	template<int n>
 	static double det(const Matrix<n, n>& src)
