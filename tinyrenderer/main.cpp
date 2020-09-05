@@ -10,9 +10,11 @@ constexpr int height = 600;
 int main(int argc, char** argv)
 {
     std::vector<double> zbuffer(width * height, -std::numeric_limits<double>::max());
-    MathLibrary::vector<3> v(1,1,1);
-    v = v + v;
-    std::cout << v/3 << std::endl;
+    MathLibrary::Matrix<3, 3> m;
+    m[0] = MathLibrary::vector<3>(1, 2, 3);
+    m[1] = MathLibrary::vector<3>(1, 2, 3);
+    m[2] = MathLibrary::vector<3>(1, 2, 3);
+    std::cout << m+m;
 
     return 0;
 }

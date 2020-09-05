@@ -129,7 +129,6 @@ namespace MathLibrary
 		{
 			out << v[i] << " ";
 		}
-		out << std::endl;
 		return out;
 	}
 /////////////////////////////////////////////////////////////////////////////////
@@ -225,7 +224,7 @@ namespace MathLibrary
 			return rows[index];
 		}
 
-		const vector<ncols>& operator[](const int index)
+		const vector<ncols>& operator[](const int index) const
 		{
 			assert(index >= 0 && index < nrows);
 			return rows[index];
@@ -340,6 +339,17 @@ namespace MathLibrary
 		return result;
 	}
 
+	template<int nrows,int ncols>
+	Matrix<nrows, ncols> operator*(const Matrix<nrows, ncols>& lhs, const double& val)
+	{
+		Matrix<nrows, ncols> ret;
+		for (int i = 0; i < nrows; ++i)
+		{
+			ret[i] = lhs[i] * val;
+		}
+		return ret;
+	}
+
 	template<int nrows, int ncols>
     Matrix<nrows, ncols> operator/(const Matrix<nrows,ncols> lhs,const double& val)
     {
@@ -350,6 +360,27 @@ namespace MathLibrary
         }
         return result;
     }
+
+	template<int nrows,int ncols>
+	Matrix<nrows, ncols> operator+(const Matrix<nrows, ncols>& lhs, const Matrix<nrows, ncols>& rhs)
+	{
+		Matrix<nrows, ncols> result;
+		for (int i = 0; i < nrows; ++i)
+		{
+			result[i] = lhs[i] + rhs[i];
+		}
+		return result;
+	}
+
+	template<int nrows,int ncols>
+	std::ostream& operator<<(std::ostream& out, const Matrix<nrows, ncols>& m)
+	{
+		for (int i = 0; i < nrows; ++i)
+		{
+			out << m[i] << std::endl;
+		}
+		return out;
+	}
 
 	template<int n>
 	static double det(const Matrix<n, n>& src)
