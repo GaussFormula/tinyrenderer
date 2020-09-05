@@ -14,7 +14,8 @@ int main(int argc, char** argv)
     m[0] = MathLibrary::vector<3>(1, 2, 3);
     m[1] = MathLibrary::vector<3>(1, 2, 3);
     m[2] = MathLibrary::vector<3>(1, 2, 3);
-    std::cout << m+m;
+    m = m.transpose();
+    std::cout << m;
 
     return 0;
 }

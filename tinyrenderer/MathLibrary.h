@@ -221,16 +221,30 @@ namespace MathLibrary
 		vector<ncols>& operator[](const int index)
 		{
 			assert(index >= 0 && index < nrows);
-			return rows[index];
+			if ((index >= 0 && index < nrows))
+			{
+				return rows[index];
+			}
+			else
+			{
+				return rows[0];
+			}
 		}
 
 		const vector<ncols>& operator[](const int index) const
 		{
-			assert(index >= 0 && index < nrows);
-			return rows[index];
+            assert(index >= 0 && index < nrows);
+            if ((index >= 0 && index < nrows))
+            {
+                return rows[index];
+            }
+            else
+            {
+                return rows[0];
+            }
 		}
 
-		vector<nrows> col(const int index)
+		vector<nrows> col(const int index)const
 		{
 			assert(index >= 0 && index < ncols);
 			vector<nrows> ret;
@@ -238,6 +252,7 @@ namespace MathLibrary
 			{
 				ret[i] = rows[i][index];
 			}
+			return ret;
 		}
 
 		void setColumn(const int index, const vector<nrows>& v)
