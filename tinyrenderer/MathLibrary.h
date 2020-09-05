@@ -208,7 +208,7 @@ namespace MathLibrary
 		}
 	};
 ////////////////////////////////////////////////////////////////////////////////
-
+	template<int n>class determinant;
 	template<int nrows,int ncols>
 	class Matrix
 	{
@@ -291,7 +291,7 @@ namespace MathLibrary
 
 		double cofactor(const int row, const int col)const
 		{
-			return det(getMinor(row, col)) * ((row + col) % 2 ? -1 : 1);
+			return getMinor(row, col).det() * ((row + col) % 2 ? -1 : 1);
 		}
 
 		Matrix<nrows, ncols> adjugate()const
@@ -326,6 +326,11 @@ namespace MathLibrary
 				ret[i] = this->col(i);
 			}
 			return ret;
+		}
+
+		double det()const
+		{
+			return determinant<ncols>::det(*this);
 		}
 	};
 
@@ -398,22 +403,28 @@ namespace MathLibrary
 	}
 
 	template<int n>
-	static double det(const Matrix<n, n>& src)
+	class determinant
 	{
-		if (n == 1)
+	public:
+		static double det(const Matrix<n, n>& src)
+		{
+			double ret = 0;
+			for (int i = 0; i < n; ++i)
+			{
+				ret += src[0][i] * src.cofactor(0, i);
+			}
+			return ret;
+		}
+	};
+
+	template<>
+	class determinant<1>
+	{
+	public:
+		static double det(const Matrix<1, 1>& src)
 		{
 			return src[0][0];
 		}
-		else
-		{
-            double ret = 0;
-            for (int i = 0; i < n; ++i)
-            {
-                ret += src[0][i] * src.cofactor(0, i);
-            }
-			return ret;
-		}
-	}
-
+	};
 }
 
