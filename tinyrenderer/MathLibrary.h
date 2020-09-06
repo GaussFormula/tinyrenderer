@@ -371,7 +371,7 @@ namespace MathLibrary
 	}
 
 	template<int nrows, int ncols>
-    Matrix<nrows, ncols> operator/(const Matrix<nrows,ncols> lhs,const double& val)
+    Matrix<nrows, ncols> operator/(const Matrix<nrows,ncols>& lhs,const double& val)
     {
         Matrix<nrows, ncols> result;
         for (int i = 0; i < nrows; ++i)
