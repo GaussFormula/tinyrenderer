@@ -135,7 +135,7 @@ namespace MathLibrary
 	template<>
 	class vector<3>
 	{
-	private:
+	public:
 		double x{}, y{}, z{};
 	public:
 		vector() = default;
@@ -172,7 +172,7 @@ namespace MathLibrary
 	template<>
 	class vector<2>
 	{
-	private:
+	public:
 		double x{}, y{};
 	public:
 		vector(double X,double Y)
@@ -438,5 +438,11 @@ namespace MathLibrary
 			return src[0][0];
 		}
 	};
+
+	typedef vector<2> vector2;
+	typedef vector<3> vector3;
+	typedef vector<4> vector4;
+
+	vector3 cross(const vector3& v1, const vector3& v2);
 }
 
