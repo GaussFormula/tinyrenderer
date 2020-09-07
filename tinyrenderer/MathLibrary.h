@@ -330,9 +330,21 @@ namespace MathLibrary
 
 		double det()const
 		{
-			return determinant<ncols>::det(*this);
+			//return determinant<ncols>::det(*this);
+			double ret = 0;
+			for (int i = 0; i < ncols; ++i)
+			{
+				ret += rows[0][i] * (this->cofactor(0, i));
+			}
+			return ret;
 		}
 	};
+
+	template<>
+	double Matrix<1, 1>::det()const
+	{
+		return this->rows[0][0];
+	}
 
 	template<int nrows,int ncols>
     vector<nrows> operator*(const Matrix<nrows,ncols>&lhs,const vector<ncols>& rhs)
