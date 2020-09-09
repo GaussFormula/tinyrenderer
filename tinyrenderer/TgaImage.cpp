@@ -134,7 +134,7 @@ bool TGAImage::write_tga_file(const std::string filename, const bool vflip, cons
         return false;
     }
     if (!rle) {
-        out.write(reinterpret_cast<const char*>(data.data()), width * height * bytespp);
+        out.write(reinterpret_cast<const char*>(data.data()), (std::int64_t)width * height * bytespp);
         if (!out.good()) {
             std::cerr << "can't unload raw data\n";
             out.close();

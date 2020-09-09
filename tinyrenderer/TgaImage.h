@@ -39,7 +39,7 @@ struct TGAColor {
     TGAColor operator *(const double intensity) const {
         TGAColor res = *this;
         double clamped = std::fmax(0., std::fmin(intensity, 1.));
-        for (int i = 0; i < 4; i++) res.bgra[i] = bgra[i] * clamped;
+        for (int i = 0; i < 4; i++) res.bgra[i] = (std::uint8_t)(bgra[i] * clamped);
         return res;
     }
 };
