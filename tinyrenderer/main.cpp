@@ -42,21 +42,45 @@ void line(int x0, int y0, int x1, int y1, TGAImage& image,const TGAColor& color)
     }
 }
 
+void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector2& v1,const MathLibrary::vector2& v2,TGAImage&image)
+{
+    std::vector<MathLibrary::vector2> vertices{ v0,v1,v2 };
+    std::qsort(vertices.data(), vertices.size(), sizeof(MathLibrary::vector2),
+        [](const void* a, const void* b)
+        {
+            const MathLibrary::vector2 aa = *static_cast<const MathLibrary::vector2*>(a);
+            const MathLibrary::vector2 bb = *static_cast<const MathLibrary::vector2*>(b);
+            if (aa.y < bb.y)
+            {
+                return -1;
+            }
+            else
+            {
+                if (aa.y > bb.y)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        });
+    float k01 = (vertices[0] - vertices[1]).y / (vertices[0] - vertices[1]).x * 1.0;
+    float k02 = (vertices[0] - vertices[2]).y / (vertices[0] - vertices[2]).x * 1.0;
+    for (int y = vertices[0].y; y < vertices[1].y; ++y)
+    {
+        
+        int x0 = y * 1.0 / k01 - 1.0 / k01 * vertices[0].y + vertices[0].x;
+        int x1 = y * 1.0 / k02 - 1.0 / k02 * vertices[0].y + vertices[0].x;
+        line(x0, y, x1, y, image, TGAColor(255, 255, 255, 255));
+    }
+}
+
 int main(int argc, char** argv)
 {
-    std::unique_ptr<Model> model = std::make_unique<Model>("african_head.obj");
     TGAImage image(width, height, TGAImage::Format::RGB);
-    for (int i = 0; i < model->nfaces(); i++) {
-        for (int j = 0; j < 3; j++) {
-            MathLibrary::vector3 v0 = model->vert(i,j);
-            MathLibrary::vector3 v1 = model->vert(i,(j + 1) % 3);
-            int x0 = (v0.x + 1.) * width / 2.;
-            int y0 = (v0.y + 1.) * height / 2.;
-            int x1 = (v1.x + 1.) * width / 2.;
-            int y1 = (v1.y + 1.) * height / 2.;
-            line(x0, y0, x1, y1, image, TGAColor(255,255,255,255));
-        }
-    }
+    DrawFilledTriangle(MathLibrary::vector2(0, 0), MathLibrary::vector2(200, 50), MathLibrary::vector2(100, 400), image);
     image.write_tga_file("output.tga");
     return 0;
 }
