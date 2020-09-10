@@ -44,6 +44,10 @@ void line(int x0, int y0, int x1, int y1, TGAImage& image,const TGAColor& color)
 
 void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector2& v1,const MathLibrary::vector2& v2,TGAImage&image)
 {
+    if (v0.y == v1.y == v2.y)
+    {
+        return;
+    }
     std::vector<MathLibrary::vector2> vertices{ v0,v1,v2 };
     std::qsort(vertices.data(), vertices.size(), sizeof(MathLibrary::vector2),
         [](const void* a, const void* b)
@@ -66,30 +70,28 @@ void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector
                 }
             }
         });
-    float k01 = (vertices[0] - vertices[1]).y / (vertices[0] - vertices[1]).x * 1.0;
-    float k02 = (vertices[0] - vertices[2]).y / (vertices[0] - vertices[2]).x * 1.0;
-    float k12 = (vertices[1] - vertices[2]).y / (vertices[1] - vertices[2]).x * 1.0;
-    for (int y = vertices[0].y; y < vertices[2].y; ++y)
+    int total_height = vertices[2].y - vertices[0].y;
+    int height01 = (vertices[1] - vertices[0]).y;
+    int height12 = (vertices[2] - vertices[1]).y;
+    for (int y = 0; y < total_height; ++y)
     {
-        if (y < vertices[1].y)
-        {
-            int x0 = y * 1.0 / k01 - 1.0 / k01 * vertices[0].y + vertices[0].x;
-            int x1 = y * 1.0 / k02 - 1.0 / k02 * vertices[0].y + vertices[0].x;
-            line(x0, y, x1, y, image, TGAColor(255, 255, 255, 255));
-        }
-        else
-        {
-            int x0 = y * 1.0 / k12 - 1.0 / k12 * vertices[1].y + vertices[1].x;
-            int x1 = y * 1.0 / k02 - 1.0 / k02 * vertices[0].y + vertices[0].x;
-            line(x0, y, x1, y, image, TGAColor(255, 255, 255, 255));
-        }
+        bool second_half = y > height01 || height01 == 0;
+        int segement_height = second_half ? height12 : height01;
+        float alpha = (float)y / total_height;
+        float beta = (float)(y - (second_half ? height01 : 0)) / segement_height;
+
+        MathLibrary::vector2 A = vertices[0] + alpha * (vertices[2] - vertices[0]);
+        MathLibrary::vector2 B = second_half ? 
+            vertices[1] + beta * (vertices[2] - vertices[1]) : vertices[0] + beta * (vertices[1] - vertices[0]);
+        line(A.x, y+vertices[0].y, B.x, y + vertices[0].y, image, TGAColor(255, 255, 255, 255));
+        std::cout << A.x << " " << B.x << std::endl;
     }
 }
 
 int main(int argc, char** argv)
 {
     TGAImage image(width, height, TGAImage::Format::RGB);
-    DrawFilledTriangle(MathLibrary::vector2(0, 0), MathLibrary::vector2(200, 50), MathLibrary::vector2(100, 400), image);
+    DrawFilledTriangle(MathLibrary::vector2(0, 0), MathLibrary::vector2(400, 50), MathLibrary::vector2(100, 400), image);
     image.write_tga_file("output.tga");
     return 0;
 }

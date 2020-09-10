@@ -62,7 +62,7 @@ namespace MathLibrary
 		vector<n> ret = rhs;
 		for (int i = 0; i < n; ++i)
 		{
-			ret[i] *= lhs * ret[i];
+			ret[i] = lhs * ret[i];
 		}
 		return ret;
 	}
