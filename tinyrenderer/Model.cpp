@@ -67,7 +67,7 @@ vector3 Model::vert(const int i) const {
 }
 
 vector3 Model::vert(const int iface, const int nthvert) const {
-    return verts_[facet_vrt_[iface * 3 + nthvert]];
+    return verts_[facet_vrt_[(std::int64_t)iface * 3 + nthvert]];
 }
 
 void Model::load_texture(std::string filename, const std::string suffix, TGAImage& img) {
@@ -95,9 +95,9 @@ double Model::specular(const vector2& uvf) const {
 }
 
 vector2 Model::uv(const int iface, const int nthvert) const {
-    return uv_[facet_tex_[iface * 3 + nthvert]];
+    return uv_[facet_tex_[(std::int64_t)iface * 3 + nthvert]];
 }
 
 vector3 Model::normal(const int iface, const int nthvert) const {
-    return norms_[facet_nrm_[iface * 3 + nthvert]];
+    return norms_[facet_nrm_[(std::int64_t)iface * 3 + nthvert]];
 }
