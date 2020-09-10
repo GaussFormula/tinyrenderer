@@ -68,12 +68,21 @@ void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector
         });
     float k01 = (vertices[0] - vertices[1]).y / (vertices[0] - vertices[1]).x * 1.0;
     float k02 = (vertices[0] - vertices[2]).y / (vertices[0] - vertices[2]).x * 1.0;
-    for (int y = vertices[0].y; y < vertices[1].y; ++y)
+    float k12 = (vertices[1] - vertices[2]).y / (vertices[1] - vertices[2]).x * 1.0;
+    for (int y = vertices[0].y; y < vertices[2].y; ++y)
     {
-        
-        int x0 = y * 1.0 / k01 - 1.0 / k01 * vertices[0].y + vertices[0].x;
-        int x1 = y * 1.0 / k02 - 1.0 / k02 * vertices[0].y + vertices[0].x;
-        line(x0, y, x1, y, image, TGAColor(255, 255, 255, 255));
+        if (y < vertices[1].y)
+        {
+            int x0 = y * 1.0 / k01 - 1.0 / k01 * vertices[0].y + vertices[0].x;
+            int x1 = y * 1.0 / k02 - 1.0 / k02 * vertices[0].y + vertices[0].x;
+            line(x0, y, x1, y, image, TGAColor(255, 255, 255, 255));
+        }
+        else
+        {
+            int x0 = y * 1.0 / k12 - 1.0 / k12 * vertices[1].y + vertices[1].x;
+            int x1 = y * 1.0 / k02 - 1.0 / k02 * vertices[0].y + vertices[0].x;
+            line(x0, y, x1, y, image, TGAColor(255, 255, 255, 255));
+        }
     }
 }
 
