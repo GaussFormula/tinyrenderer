@@ -88,10 +88,53 @@ void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector
     }
 }
 
+MathLibrary::vector3 barycentric(MathLibrary::vector2* points, MathLibrary::vector2& p)
+{
+    MathLibrary::vector3 u = MathLibrary::cross(
+        MathLibrary::vector3(points[2][0] - points[0][0], points[1][0] - points[0][0], points[0][0] - p[0]),
+        MathLibrary::vector3(points[2][1] - points[0][1], points[1][1] - points[0][1], points[0][1] - p[1])
+    );
+    if (std::abs(u[2]) < 1)
+    {
+        return MathLibrary::vector3(-1, 1, 1);
+    }
+    return MathLibrary::vector3(1.0f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+}
+
+void triangle(MathLibrary::vector2* points, TGAImage& image,const TGAColor& color)
+{
+    MathLibrary::vector2 bboxmin(image.get_width() - 1.0, image.get_height() - 1.0);
+    MathLibrary::vector2 bboxmax(0.0, 0.0);
+    MathLibrary::vector2 clamp(bboxmin);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            bboxmin[j] = std::fmax(0, std::fmin(bboxmin[j], points[i][j]));
+            bboxmax[j] = std::fmin(clamp[j], std::fmax(bboxmax[j], points[i][j]));
+        }
+    }
+    MathLibrary::vector2 p;
+    for (p.x = bboxmin.x; p.x <= bboxmax.x; ++p.x)
+    {
+        for (p.y = bboxmin.y; p.y <= bboxmax.y; ++p.y)
+        {
+            MathLibrary::vector3 bc_screen = barycentric(points, p);
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+            {
+                continue;
+            }
+            image.set(p.x, p.y, color);
+        }
+    }
+}
+
 int main(int argc, char** argv)
 {
     TGAImage image(width, height, TGAImage::Format::RGB);
-    DrawFilledTriangle(MathLibrary::vector2(0, 0), MathLibrary::vector2(400, 50), MathLibrary::vector2(100, 400), image);
+    MathLibrary::vector2 points[3]{ MathLibrary::vector2(0, 0), MathLibrary::vector2(400, 50), MathLibrary::vector2(100, 400) };
+    triangle(points, image,TGAColor(255,255,255,255));
     image.write_tga_file("output.tga");
     return 0;
 }
