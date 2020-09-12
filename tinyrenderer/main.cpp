@@ -6,8 +6,9 @@
 #include "TgaImage.h"
 #include "Model.h"
 
-constexpr int width = 800;
-constexpr int height = 1000;
+constexpr int width = 10000;
+constexpr int height = 12800;
+static std::uint64_t count = 0;
 
 void line(int x0, int y0, int x1, int y1, TGAImage& image,const TGAColor& color)
 {
@@ -42,9 +43,13 @@ void line(int x0, int y0, int x1, int y1, TGAImage& image,const TGAColor& color)
     }
 }
 
-void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector2& v1,const MathLibrary::vector2& v2,TGAImage&image)
+void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector2& v1,const MathLibrary::vector2& v2,TGAImage&image,TGAColor color)
 {
-    if (v0.y == v1.y == v2.y)
+    if (v0.y == v1.y&&v1.y == v2.y)
+    {
+        return;
+    }
+    if (v0.x == v1.x && v1.x == v2.x)
     {
         return;
     }
@@ -83,9 +88,16 @@ void DrawFilledTriangle(const MathLibrary::vector2& v0,const MathLibrary::vector
         MathLibrary::vector2 A = vertices[0] + alpha * (vertices[2] - vertices[0]);
         MathLibrary::vector2 B = second_half ? 
             vertices[1] + beta * (vertices[2] - vertices[1]) : vertices[0] + beta * (vertices[1] - vertices[0]);
-        line(A.x, y+vertices[0].y, B.x, y + vertices[0].y, image, TGAColor(255, 255, 255, 255));
-        std::cout << A.x << " " << B.x << std::endl;
+        if (A.x > B.x)
+        {
+            std::swap(A, B);
+        }
+        for (int j = A.x; j <= B.x; ++j)
+        {
+            image.set(j, vertices[0].y + y, color);
+        }
     }
+    count++;
 }
 
 MathLibrary::vector3 barycentric(MathLibrary::vector2* points, MathLibrary::vector2& p)
@@ -98,7 +110,7 @@ MathLibrary::vector3 barycentric(MathLibrary::vector2* points, MathLibrary::vect
     {
         return MathLibrary::vector3(-1, 1, 1);
     }
-    return MathLibrary::vector3(1.0f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+    return MathLibrary::vector3(u.y / u.z, 1.0f - (u.y + u.x) / u.z,  u.x / u.z);
 }
 
 void triangle(MathLibrary::vector2* points, TGAImage& image,const TGAColor& color)
@@ -128,13 +140,34 @@ void triangle(MathLibrary::vector2* points, TGAImage& image,const TGAColor& colo
             image.set(p.x, p.y, color);
         }
     }
+    count++;
 }
 
 int main(int argc, char** argv)
 {
     TGAImage image(width, height, TGAImage::Format::RGB);
-    MathLibrary::vector2 points[3]{ MathLibrary::vector2(0, 0), MathLibrary::vector2(400, 50), MathLibrary::vector2(100, 400) };
-    triangle(points, image,TGAColor(255,255,255,255));
+    MathLibrary::vector3 light_dir(0, 0, -1);
+    std::unique_ptr<Model> p = std::make_unique<Model>("african_head.obj");
+    for (int i = 0; i < p->nfaces(); ++i)
+    {
+        MathLibrary::vector2 screen_coords[3];
+        MathLibrary::vector3 world_coords[3];
+        for (int j = 0; j < 3; ++j)
+        {
+            MathLibrary::vector3 v = p->vert(i, j);
+            screen_coords[j] = MathLibrary::vector2((v.x + 1.0) * width / 2, (v.y + 1.0) * height / 2);
+            world_coords[j] = v;
+        }
+        MathLibrary::vector3 n = cross(world_coords[2] - world_coords[0], world_coords[1] - world_coords[0]);
+        n.normalize();
+        float intensity = n * light_dir;
+        if (intensity > 0)
+        {
+            DrawFilledTriangle(screen_coords[0],screen_coords[1],screen_coords[2],image,TGAColor(intensity*255, intensity * 255, intensity * 255, 255));
+            //triangle(screen_coords, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
+        }
+    }
     image.write_tga_file("output.tga");
+    std::cout << count;
     return 0;
 }
