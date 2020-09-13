@@ -6,8 +6,8 @@
 #include "TgaImage.h"
 #include "Model.h"
 
-constexpr int width = 10000;
-constexpr int height = 12800;
+constexpr int width = 1000;
+constexpr int height = 1280;
 static std::uint64_t count = 0;
 
 void line(int x0, int y0, int x1, int y1, TGAImage& image,const TGAColor& color)
@@ -113,34 +113,68 @@ MathLibrary::vector3 barycentric(MathLibrary::vector2* points, MathLibrary::vect
     return MathLibrary::vector3(u.y / u.z, 1.0f - (u.y + u.x) / u.z,  u.x / u.z);
 }
 
-void triangle(MathLibrary::vector2* points, TGAImage& image,const TGAColor& color)
+MathLibrary::vector3 barycentric(MathLibrary::vector3& A, MathLibrary::vector3& B, MathLibrary::vector3& C, MathLibrary::vector3& P)
 {
-    MathLibrary::vector2 bboxmin(image.get_width() - 1.0, image.get_height() - 1.0);
-    MathLibrary::vector2 bboxmax(0.0, 0.0);
-    MathLibrary::vector2 clamp(bboxmin);
+    MathLibrary::vector3 s[2];
+    for (int i = 0; i < 2; i++)
+    {
+        s[i][0] = B[i] - A[i];
+        s[i][1] = C[i] - A[i];
+        s[i][2] = A[i] - P[i];
+    }
+    /*for (int i = 2; i--; ) 
+    {
+        s[i][0] = C[i] - A[i];
+        s[i][1] = B[i] - A[i];
+        s[i][2] = A[i] - P[i];
+    }*/
+    MathLibrary::vector3 u = cross(s[0], s[1]);
+    if (std::abs(u[2]) >1e-2)
+    {
+        return MathLibrary::vector3(1.0f - (u.x + u.y) / u.z, u.x / u.z, u.y / u.z);
+        
+    }
+    return MathLibrary::vector3(-1, 1, 1);
+}
+
+void triangle(MathLibrary::vector3* points, float* zbuffer, TGAImage& image,const TGAColor& color)
+{
+    MathLibrary::vector2 bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+    MathLibrary::vector2 bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+    MathLibrary::vector2 clamp(image.get_width() - 1, image.get_height() - 1);
 
     for (int i = 0; i < 3; ++i)
     {
         for (int j = 0; j < 2; ++j)
         {
-            bboxmin[j] = std::fmax(0, std::fmin(bboxmin[j], points[i][j]));
+            bboxmin[j] = std::fmax(0.0f, std::fmin(bboxmin[j], points[i][j]));
             bboxmax[j] = std::fmin(clamp[j], std::fmax(bboxmax[j], points[i][j]));
         }
     }
-    MathLibrary::vector2 p;
-    for (p.x = bboxmin.x; p.x <= bboxmax.x; ++p.x)
+
+    MathLibrary::vector3 P;
+    for (P.x = bboxmin.x; P.x < bboxmax.x; P.x++)
     {
-        for (p.y = bboxmin.y; p.y <= bboxmax.y; ++p.y)
+        for (P.y = bboxmin.y; P.y < bboxmax.y; P.y++)
         {
-            MathLibrary::vector3 bc_screen = barycentric(points, p);
+            MathLibrary::vector3 bc_screen = barycentric(points[0], points[1], points[2], P);
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
             {
                 continue;
             }
-            image.set(p.x, p.y, color);
+            P.z = 0;
+            for (int i = 0; i < 3; ++i)
+            {
+                P.z += points[i][2] * bc_screen[i];
+            }
+            if (zbuffer[(int)(P.x + P.y * width)] < P.z)
+            {
+                zbuffer[(int)(P.x + P.y * width)] = P.z;
+                image.set(P.x, P.y, color);
+                count++;
+            }
         }
     }
-    count++;
 }
 
 int main(int argc, char** argv)
@@ -148,26 +182,22 @@ int main(int argc, char** argv)
     TGAImage image(width, height, TGAImage::Format::RGB);
     MathLibrary::vector3 light_dir(0, 0, -1);
     std::unique_ptr<Model> p = std::make_unique<Model>("african_head.obj");
+    float* zbuffer = new float[width * height];
+    memset(zbuffer, -std::numeric_limits<float>::max(), sizeof(float) * width * height);
     for (int i = 0; i < p->nfaces(); ++i)
     {
-        MathLibrary::vector2 screen_coords[3];
+        MathLibrary::vector3 screen_coords[3];
         MathLibrary::vector3 world_coords[3];
         for (int j = 0; j < 3; ++j)
         {
             MathLibrary::vector3 v = p->vert(i, j);
-            screen_coords[j] = MathLibrary::vector2((v.x + 1.0) * width / 2, (v.y + 1.0) * height / 2);
+            screen_coords[j] = MathLibrary::vector3((v.x + 1.0) * width / 2+0.5, (v.y + 1.0) * height / 2+0.5,v.z);
             world_coords[j] = v;
         }
-        MathLibrary::vector3 n = cross(world_coords[2] - world_coords[0], world_coords[1] - world_coords[0]);
-        n.normalize();
-        float intensity = n * light_dir;
-        if (intensity > 0)
-        {
-            DrawFilledTriangle(screen_coords[0],screen_coords[1],screen_coords[2],image,TGAColor(intensity*255, intensity * 255, intensity * 255, 255));
-            //triangle(screen_coords, image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
-        }
+        triangle(screen_coords, zbuffer,image, TGAColor(rand() % 255, rand() % 255, rand() % 255, 255));
     }
     image.write_tga_file("output.tga");
+    delete zbuffer;
     std::cout << count;
     return 0;
 }
