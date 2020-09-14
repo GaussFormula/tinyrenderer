@@ -244,6 +244,15 @@ namespace MathLibrary
             }
 		}
 
+		Matrix<nrows, ncols> operator=(const Matrix<nrows, ncols>& rhs)
+		{
+			for (int i = 0; i < nrows; ++i)
+			{
+				this->rows[i] = rhs[i];
+			}
+			return *this;
+		}
+
 		vector<nrows> col(const int index)const
 		{
 			assert(index >= 0 && index < ncols);
@@ -269,11 +278,12 @@ namespace MathLibrary
 			Matrix<nrows, ncols> ret;
 			for (int i = 0; i < nrows; ++i)
 			{
-				for (int j = 0; i < ncols; ++j)
+				for (int j = 0; j < ncols; ++j)
 				{
 					ret[i][j] = (i == j);
 				}
 			}
+			return ret;
 		}
 
 		Matrix<nrows - 1, ncols - 1> getMinor(const int row, const int col)const
