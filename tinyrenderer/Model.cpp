@@ -14,19 +14,19 @@ Model::Model(const std::string filename) : verts_(), uv_(), norms_(), facet_vrt_
         char trash;
         if (!line.compare(0, 2, "v ")) {
             iss >> trash;
-            vector3 v;
+            vector3f v;
             for (int i = 0; i < 3; i++) iss >> v[i];
             verts_.push_back(v);
         }
         else if (!line.compare(0, 3, "vn ")) {
             iss >> trash >> trash;
-            vector3 n;
+            vector3f n;
             for (int i = 0; i < 3; i++) iss >> n[i];
             norms_.push_back(n.normalize());
         }
         else if (!line.compare(0, 3, "vt ")) {
             iss >> trash >> trash;
-            vector2 uv;
+            vector2f uv;
             for (int i = 0; i < 2; i++) iss >> uv[i];
             uv_.push_back(uv);
         }
@@ -62,11 +62,11 @@ int Model::nfaces() const {
     return facet_vrt_.size() / 3;
 }
 
-vector3 Model::vert(const int i) const {
+vector3f Model::vert(const int i) const {
     return verts_[i];
 }
 
-vector3 Model::vert(const int iface, const int nthvert) const {
+vector3f Model::vert(const int iface, const int nthvert) const {
     return verts_[facet_vrt_[(std::int64_t)iface * 3 + nthvert]];
 }
 
@@ -78,26 +78,26 @@ void Model::load_texture(std::string filename, const std::string suffix, TGAImag
     img.flip_vertically();
 }
 
-TGAColor Model::diffuse(const vector2& uvf) const {
+TGAColor Model::diffuse(const vector2f& uvf) const {
     return diffusemap_.get(uvf[0] * diffusemap_.get_width(), uvf[1] * diffusemap_.get_height());
 }
 
-vector3 Model::normal(const vector2& uvf) const {
+vector3f Model::normal(const vector2f& uvf) const {
     TGAColor c = normalmap_.get(uvf[0] * normalmap_.get_width(), uvf[1] * normalmap_.get_height());
-    vector3 res;
+    vector3f res;
     for (int i = 0; i < 3; i++)
         res[2 - i] = c[i] / 255. * 2 - 1;
     return res;
 }
 
-double Model::specular(const vector2& uvf) const {
+double Model::specular(const vector2f& uvf) const {
     return specularmap_.get(uvf[0] * specularmap_.get_width(), uvf[1] * specularmap_.get_height())[0];
 }
 
-vector2 Model::uv(const int iface, const int nthvert) const {
+vector2f Model::uv(const int iface, const int nthvert) const {
     return uv_[facet_tex_[(std::int64_t)iface * 3 + nthvert]];
 }
 
-vector3 Model::normal(const int iface, const int nthvert) const {
+vector3f Model::normal(const int iface, const int nthvert) const {
     return norms_[facet_nrm_[(std::int64_t)iface * 3 + nthvert]];
 }

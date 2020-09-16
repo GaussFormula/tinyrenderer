@@ -6,26 +6,26 @@
 
 namespace MathLibrary
 {
-    template<int n>
+    template<int n,typename T>
 	class vector
 	{
 	private:
-		double data[n] = { 0 };
+		T data[n] = { 0 };
 	public:
 		vector() = default;
-		double& operator[](const int i)
+		T& operator[](const int i)
 		{
 			assert(i >= 0 && i < n);
 			return data[i];
 		}
 
-		double operator[](const int i)const
+		T operator[](const int i)const
 		{
 			assert(i >= 0 && i < n);
 			return data[i];
 		}
 
-		vector<n>& operator=(const vector<n>& rhs)
+		vector<n,T>& operator=(const vector<n,T>& rhs)
 		{
 			for (int i = 0; i < n; ++i)
 			{
@@ -45,8 +45,8 @@ namespace MathLibrary
 		}
 	};
 
-    template<int n>
-    double operator*(const vector<n>& lhs, const vector<n>& rhs)
+    template<int n,typename T>
+    double operator*(const vector<n,T>& lhs, const vector<n,T>& rhs)
     {
         double ret = 0;
         for (int i = 0; i < n; ++i)
@@ -56,8 +56,8 @@ namespace MathLibrary
         return ret;
     }
 
-	template<int n>
-	vector<n> operator*(const double& lhs, const vector<n>& rhs)
+	template<int n,typename T>
+	vector<n,T> operator*(const double& lhs, const vector<n,T>& rhs)
 	{
 		vector<n> ret = rhs;
 		for (int i = 0; i < n; ++i)
@@ -67,10 +67,10 @@ namespace MathLibrary
 		return ret;
 	}
 
-	template<int n>
-	vector<n> operator+(const vector<n>& lhs, const vector<n>& rhs)
+	template<int n,typename T>
+	vector<n,T> operator+(const vector<n,T>& lhs, const vector<n,T>& rhs)
 	{
-		vector<n> ret = lhs;
+		vector<n,T> ret = lhs;
 		for (int i = 0; i < n; ++i)
 		{
 			ret[i] += rhs[i];
@@ -78,10 +78,10 @@ namespace MathLibrary
 		return ret;
 	}
 
-	template<int n>
-	vector<n> operator/(const vector<n>& lhs, const double& rhs)
+	template<int n,typename T>
+	vector<n,T> operator/(const vector<n,T>& lhs, const double& rhs)
 	{
-		vector<n> ret = lhs;
+		vector<n,T> ret = lhs;
 		for (int i = 0; i < n; ++i)
 		{
 			ret[i] /= rhs;
@@ -89,8 +89,8 @@ namespace MathLibrary
 		return ret;
 	}
 
-	template<int n>
-	vector<n> operator-(const vector<n>& lhs, const vector<n>& rhs)
+	template<int n,typename T>
+	vector<n,T> operator-(const vector<n,T>& lhs, const vector<n,T>& rhs)
 	{
 		vector<n> ret = lhs;
 		for (int i = 0; i < n; ++i)
@@ -100,8 +100,8 @@ namespace MathLibrary
 		return ret;
 	}
 
-	template<int n1,int n2>
-	vector<n1> embed(const vector<n2>& v, double fill = 1)
+	template<int n1,int n2,typename T>
+	vector<n1,T> embed(const vector<n2,T>& v, double fill = 1)
 	{
 		vector<n1> ret;
 		for (int i = 0; i < n1; ++i)
@@ -111,8 +111,8 @@ namespace MathLibrary
 		return ret;
 	}
 
-	template<int n1,int n2>
-	vector<n1> proj(const vector<n2>& v)
+	template<int n1,int n2,typename T>
+	vector<n1,T> proj(const vector<n2,T>& v)
 	{
 		vector<n1> ret;
 		for (int i = 0; i < n1; ++i)
@@ -122,8 +122,8 @@ namespace MathLibrary
 		return ret;
 	}
 
-	template<int n>
-	std::ostream& operator<<(std::ostream& out, const vector<n>& v)
+	template<int n,typename T>
+	std::ostream& operator<<(std::ostream& out, const vector<n,T>& v)
 	{
 		for (int i = 0; i < n; ++i)
 		{
@@ -132,8 +132,8 @@ namespace MathLibrary
 		return out;
 	}
 /////////////////////////////////////////////////////////////////////////////////
-	template<>
-	class vector<3>
+	template<typename T>
+	class vector<3,T>
 	{
 	public:
 		double x{}, y{}, z{};
@@ -169,8 +169,8 @@ namespace MathLibrary
 		}
 	};
 /////////////////////////////////////////////////////////////////////////////////
-	template<>
-	class vector<2>
+	template<typename T>
+	class vector<2,T>
 	{
 	public:
 		double x{}, y{};
@@ -208,17 +208,17 @@ namespace MathLibrary
 		}
 	};
 ////////////////////////////////////////////////////////////////////////////////
-	template<int n>class determinant;
-	template<int nrows,int ncols>
+	template<int n,typename T>class determinant;
+	template<int nrows,int ncols,typename T>
 	class Matrix
 	{
 	private:
-		vector<ncols> rows[nrows]{ {} };
+		vector<ncols,T> rows[nrows]{ {} };
 
 
 	public:
 		Matrix() = default;
-		vector<ncols>& operator[](const int index)
+		vector<ncols,T>& operator[](const int index)
 		{
 			assert(index >= 0 && index < nrows);
 			if ((index >= 0 && index < nrows))
@@ -231,7 +231,7 @@ namespace MathLibrary
 			}
 		}
 
-		const vector<ncols>& operator[](const int index) const
+		const vector<ncols,T>& operator[](const int index) const
 		{
             assert(index >= 0 && index < nrows);
             if ((index >= 0 && index < nrows))
@@ -244,7 +244,7 @@ namespace MathLibrary
             }
 		}
 
-		Matrix<nrows, ncols> operator=(const Matrix<nrows, ncols>& rhs)
+		Matrix<nrows, ncols,T> operator=(const Matrix<nrows, ncols,T>& rhs)
 		{
 			for (int i = 0; i < nrows; ++i)
 			{
@@ -253,7 +253,7 @@ namespace MathLibrary
 			return *this;
 		}
 
-		vector<nrows> col(const int index)const
+		vector<nrows,T> col(const int index)const
 		{
 			assert(index >= 0 && index < ncols);
 			vector<nrows> ret;
@@ -264,7 +264,7 @@ namespace MathLibrary
 			return ret;
 		}
 
-		void setColumn(const int index, const vector<nrows>& v)
+		void setColumn(const int index, const vector<nrows,T>& v)
 		{
 			assert(index >= 0 && index < ncols);
 			for (int i = 0; i < nrows; ++i)
@@ -273,9 +273,9 @@ namespace MathLibrary
 			}
 		}
 
-		static Matrix<nrows, ncols> identity()
+		static Matrix<nrows, ncols,T> identity()
 		{
-			Matrix<nrows, ncols> ret;
+			Matrix<nrows, ncols,T> ret;
 			for (int i = 0; i < nrows; ++i)
 			{
 				for (int j = 0; j < ncols; ++j)
@@ -286,9 +286,9 @@ namespace MathLibrary
 			return ret;
 		}
 
-		Matrix<nrows - 1, ncols - 1> getMinor(const int row, const int col)const
+		Matrix<nrows - 1, ncols - 1,T> getMinor(const int row, const int col)const
 		{
-			Matrix<nrows - 1, ncols - 1>ret;
+			Matrix<nrows - 1, ncols - 1,T>ret;
 			for (int i = 0; i < nrows - 1; ++i)
 			{
 				for (int j = 0; j < ncols - 1; ++j)
@@ -304,9 +304,9 @@ namespace MathLibrary
 			return getMinor(row, col).det() * ((row + col) % 2 ? -1 : 1);
 		}
 
-		Matrix<nrows, ncols> adjugate()const
+		Matrix<nrows, ncols,T> adjugate()const
 		{
-			Matrix<nrows, ncols> ret;
+			Matrix<nrows, ncols,T> ret;
 			for (int i = 0; i < nrows; ++i)
 			{
 				for (int j = 0; j < ncols; ++j)
@@ -317,20 +317,20 @@ namespace MathLibrary
 			return ret;
 		}
 
-		Matrix<nrows, ncols> invertTranspose()const
+		Matrix<nrows, ncols,T> invertTranspose()const
 		{
-			Matrix<nrows, ncols> ret = adjugate();
+			Matrix<nrows, ncols,T> ret = adjugate();
 			return ret / (ret[0] * rows[0]);
 		}
 
-		Matrix<nrows, ncols> invert()const
+		Matrix<nrows, ncols,T> invert()const
 		{
 			return invertTranspose().transpose();
 		}
 
-		Matrix<nrows, ncols> transpose()const
+		Matrix<nrows, ncols,T> transpose()const
 		{
-			Matrix<nrows, ncols> ret;
+			Matrix<nrows, ncols,T> ret;
 			for (int i = 0; i < nrows; ++i)
 			{
 				ret[i] = this->col(i);
@@ -351,13 +351,13 @@ namespace MathLibrary
 	};
 
 	template<>
-	double Matrix<1, 1>::det()const
+	double Matrix<1, 1,double>::det()const
 	{
 		return this->rows[0][0];
 	}
 
-	template<int nrows,int ncols>
-    vector<nrows> operator*(const Matrix<nrows,ncols>&lhs,const vector<ncols>& rhs)
+	template<int nrows,int ncols, typename T>
+    vector<nrows,T> operator*(const Matrix<nrows,ncols,T>&lhs,const vector<ncols,T>& rhs)
     {
         vector<nrows> ret;
         for (int i = 0; i < nrows; ++i)
@@ -367,8 +367,8 @@ namespace MathLibrary
         return ret;
     }
 
-	template<int R1,int C1,int C2>
-	Matrix<R1, C2> operator*(const Matrix<R1, C1>& lhs, const Matrix<C1, C2>& rhs)
+	template<int R1,int C1,int C2,typename T>
+	Matrix<R1, C2,T> operator*(const Matrix<R1, C1,T>& lhs, const Matrix<C1, C2,T>& rhs)
 	{
 		Matrix<R1, C2> result;
 		for (int i = 0; i < R1; ++i)
@@ -381,10 +381,10 @@ namespace MathLibrary
 		return result;
 	}
 
-	template<int nrows,int ncols>
-	Matrix<nrows, ncols> operator*(const Matrix<nrows, ncols>& lhs, const double& val)
+	template<int nrows,int ncols,typename T>
+	Matrix<nrows, ncols,T> operator*(const Matrix<nrows, ncols,T>& lhs, const double& val)
 	{
-		Matrix<nrows, ncols> ret;
+		Matrix<nrows, ncols,T> ret;
 		for (int i = 0; i < nrows; ++i)
 		{
 			ret[i] = lhs[i] * val;
@@ -392,10 +392,10 @@ namespace MathLibrary
 		return ret;
 	}
 
-	template<int nrows, int ncols>
-    Matrix<nrows, ncols> operator/(const Matrix<nrows,ncols>& lhs,const double& val)
+	template<int nrows, int ncols,typename T>
+    Matrix<nrows, ncols,T> operator/(const Matrix<nrows,ncols,T>& lhs,const double& val)
     {
-        Matrix<nrows, ncols> result;
+        Matrix<nrows, ncols,T> result;
         for (int i = 0; i < nrows; ++i)
         {
             result[i] = lhs[i] / val;
@@ -403,10 +403,10 @@ namespace MathLibrary
         return result;
     }
 
-	template<int nrows,int ncols>
-	Matrix<nrows, ncols> operator+(const Matrix<nrows, ncols>& lhs, const Matrix<nrows, ncols>& rhs)
+	template<int nrows,int ncols,typename T>
+	Matrix<nrows, ncols,T> operator+(const Matrix<nrows, ncols,T>& lhs, const Matrix<nrows, ncols,T>& rhs)
 	{
-		Matrix<nrows, ncols> result;
+		Matrix<nrows, ncols,T> result;
 		for (int i = 0; i < nrows; ++i)
 		{
 			result[i] = lhs[i] + rhs[i];
@@ -414,8 +414,8 @@ namespace MathLibrary
 		return result;
 	}
 
-	template<int nrows,int ncols>
-	std::ostream& operator<<(std::ostream& out, const Matrix<nrows, ncols>& m)
+	template<int nrows,int ncols,typename T>
+	std::ostream& operator<<(std::ostream& out, const Matrix<nrows, ncols,T>& m)
 	{
 		for (int i = 0; i < nrows; ++i)
 		{
@@ -424,11 +424,11 @@ namespace MathLibrary
 		return out;
 	}
 
-	template<int n>
+	template<int n,typename T>
 	class determinant
 	{
 	public:
-		static double det(const Matrix<n, n>& src)
+		static double det(const Matrix<n, n,T>& src)
 		{
 			double ret = 0;
 			for (int i = 0; i < n; ++i)
@@ -439,20 +439,25 @@ namespace MathLibrary
 		}
 	};
 
-	template<>
-	class determinant<1>
+	template<typename T>
+	class determinant<1,T>
 	{
 	public:
-		static double det(const Matrix<1, 1>& src)
+		static double det(const Matrix<1, 1,T>& src)
 		{
 			return src[0][0];
 		}
 	};
 
-	typedef vector<2> vector2;
-	typedef vector<3> vector3;
-	typedef vector<4> vector4;
+	typedef vector<2,int> vector2i;
+	typedef vector<3,int> vector3i;
+	typedef vector<4,int> vector4i;
 
-	vector3 cross(const vector3& v1, const vector3& v2);
+	typedef vector<2, float> vector2f;
+	typedef vector<3, float> vector3f;
+	typedef vector<4, float> vector4f;
+
+	template<typename T>
+	vector<3,T> cross(const vector<3, T>& v1, const vector<3, T>& v2);
 }
 
