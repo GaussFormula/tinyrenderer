@@ -59,7 +59,7 @@ namespace MathLibrary
 	template<int n,typename T>
 	vector<n,T> operator*(const double& lhs, const vector<n,T>& rhs)
 	{
-		vector<n> ret = rhs;
+		vector<n,T> ret = rhs;
 		for (int i = 0; i < n; ++i)
 		{
 			ret[i] = lhs * ret[i];
@@ -92,7 +92,7 @@ namespace MathLibrary
 	template<int n,typename T>
 	vector<n,T> operator-(const vector<n,T>& lhs, const vector<n,T>& rhs)
 	{
-		vector<n> ret = lhs;
+		vector<n,T> ret = lhs;
 		for (int i = 0; i < n; ++i)
 		{
 			ret[i] -= rhs[i];
@@ -136,20 +136,30 @@ namespace MathLibrary
 	class vector<3,T>
 	{
 	public:
-		double x{}, y{}, z{};
+		T x{}, y{}, z{};
 	public:
 		vector() = default;
-		vector(double x,double y,double z)
+		vector(T x,T y,T z)
 			:x(x),y(y),z(z)
 		{}
 
-		double& operator[](const int i)
+
+        vector(const vector& rhs)
+        {
+            this->x = rhs.x;
+            this->y = rhs.y;
+			this->z = rhs.z;
+        }
+
+		
+
+		T& operator[](const int i)
 		{
 			assert(i >= 0 && i < 3);
 			return i == 0 ? x : (1 == i ? y : z);
 		}
 
-		double operator[](const int i)const
+		T operator[](const int i)const
 		{
 			assert(i >= 0 && i < 3);
 			return i == 0 ? x : (1 == i ? y : z);
@@ -173,19 +183,24 @@ namespace MathLibrary
 	class vector<2,T>
 	{
 	public:
-		double x{}, y{};
+		T x{}, y{};
 	public:
-		vector(double X,double Y)
+		vector(T X,T Y)
 			:x(X),y(Y)
 		{}
+		vector(const vector& rhs)
+		{
+			this->x = rhs.x;
+			this->y = rhs.y;
+		}
 		vector() = default;
-		double& operator[](const int i)
+		T& operator[](const int i)
 		{
 			assert(i >= 0 && i < 2);
 			return i == 0 ? x : y;
 		}
 
-		double operator[](const int i)const
+		T operator[](const int i)const
 		{
 			assert(i >= 0 && i < 2);
 			return i == 0 ? x : y;
@@ -207,6 +222,7 @@ namespace MathLibrary
 			return *this;
 		}
 	};
+
 ////////////////////////////////////////////////////////////////////////////////
 	template<int n,typename T>class determinant;
 	template<int nrows,int ncols,typename T>
@@ -256,7 +272,7 @@ namespace MathLibrary
 		vector<nrows,T> col(const int index)const
 		{
 			assert(index >= 0 && index < ncols);
-			vector<nrows> ret;
+			vector<nrows,T> ret;
 			for (int i = 0; i < nrows; ++i)
 			{
 				ret[i] = rows[i][index];
@@ -370,7 +386,7 @@ namespace MathLibrary
 	template<int R1,int C1,int C2,typename T>
 	Matrix<R1, C2,T> operator*(const Matrix<R1, C1,T>& lhs, const Matrix<C1, C2,T>& rhs)
 	{
-		Matrix<R1, C2> result;
+		Matrix<R1, C2,T> result;
 		for (int i = 0; i < R1; ++i)
 		{
 			for (int j = 0; j < C2; ++j)
@@ -457,7 +473,17 @@ namespace MathLibrary
 	typedef vector<3, float> vector3f;
 	typedef vector<4, float> vector4f;
 
-	template<typename T>
-	vector<3,T> cross(const vector<3, T>& v1, const vector<3, T>& v2);
+	
+
+    template<typename T>
+    vector<3, T> cross(const vector<3, T>& v1, const vector<3, T>& v2)
+    {
+        vector<3, T> ret;
+        ret[0] = v1[1] * v2[2] - v1[2] * v2[1];
+        ret[1] = v1[2] * v2[0] - v1[0] * v2[2];
+        ret[2] = v1[0] * v2[1] - v1[1] * v2[0];
+        return ret;
+        //{ v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0] };
+    }
 }
 
