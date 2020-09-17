@@ -483,6 +483,6 @@ namespace MathLibrary
 	vector3i::vector(const vector3f& rhs);
 	
 
-	vector<3, int> cross(const vector<3, int>& v1, const vector<3, int>& v2);
+	vector<3, float> cross(const vector<3, float>& v1, const vector<3, float>& v2);
 }
 

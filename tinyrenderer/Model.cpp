@@ -95,7 +95,8 @@ double Model::specular(const vector2f& uvf) const {
 }
 
 vector2f Model::uv(const int iface, const int nthvert) const {
-    return uv_[facet_tex_[(std::int64_t)iface * 3 + nthvert]];
+    vector2f temp = uv_[facet_tex_[(std::int64_t)iface * 3 + nthvert]];
+    return vector2f(temp.x * diffusemap_.get_width(), temp.y * diffusemap_.get_height());
 }
 
 vector3f Model::normal(const int iface, const int nthvert) const {

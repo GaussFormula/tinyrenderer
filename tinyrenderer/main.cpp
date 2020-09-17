@@ -90,16 +90,20 @@ void triangle(MathLibrary::vector3i* points,MathLibrary::vector2i* uvs,
 
         for (int x = A.x; x < B.x; ++x)
         {
-            float phi = B.x == A.x ? 1.0f : float(x - A.x) / (float)(B.x - A.x);
+            float phi = (B.x == A.x) ? 1.0f : float(x - A.x) / (float)(B.x - A.x);
             MathLibrary::vector3f ret = A + phi*(B-A);
-            MathLibrary::vector3i p = MathLibrary::vector3i((int)(ret.x+0.5f), (int)(ret.y+0.5f), (int)(ret.z+0.5f));
+            //MathLibrary::vector3i p = MathLibrary::vector3i((int)(ret.x+0.5f), (int)(ret.y+0.5f), (int)(ret.z+0.5f));
             MathLibrary::vector2i uvP = uvA + phi * (uvB - uvA);
-            int idx = p.x + p.y * width;
-            if (zbuffer[idx] < p.z)
+            int idx = ret.x + ret.y * width;
+            if (zbuffer[idx] < ret.z)
             {
-                zbuffer[idx] = p.z;
+                zbuffer[idx] = ret.z;
                 TGAColor color = model->diffuse(MathLibrary::vector2f(uvP.x, uvP.y));
-                image.set(p.x, p.y, color);
+                image.set(ret.x, y+points[0].y, color);
+                //count++;
+            }
+            else
+            {
                 count++;
             }
         }
@@ -121,18 +125,15 @@ int main(int argc, char** argv)
     for (int i = 0; i < model->nfaces(); ++i)
     {
         MathLibrary::vector3i screen_coords[3];
-        MathLibrary::vector3i world_coords[3];
+        MathLibrary::vector3f world_coords[3];
 
         for (int j = 0; j < 3; ++j)
         {
             MathLibrary::vector3f v = model->vert(i, j);
-            MathLibrary::vector3f temp = m2v(ViewPort * Projection * v2m(v));
-            screen_coords[j] = MathLibrary::vector3i(temp.x + 0.5f, temp.y + 0.5f, temp.z + 0.5f);
-            world_coords[j] = MathLibrary::vector3i(v.x + 0.5f, v.y + 0.5f, v.z + 0.5f);
+            screen_coords[j] = m2v(ViewPort * Projection * v2m(v));
+            world_coords[j] = v;
         }
-
-        MathLibrary::vector<3, int> int_n = MathLibrary::cross(screen_coords[2] - screen_coords[0], screen_coords[1] - screen_coords[0]);
-        MathLibrary::vector3f n = MathLibrary::vector3f(int_n.x, int_n.y, int_n.z);
+        MathLibrary::vector3f n = MathLibrary::cross(world_coords[2] - world_coords[0], world_coords[1] - world_coords[0]);
         n.normalize();
         float intensity = n * light_dir;
         if (intensity > 0)
@@ -140,7 +141,7 @@ int main(int argc, char** argv)
             MathLibrary::vector2i uv[3];
             for (int k = 0; k < 3; ++k)
             {
-                uv[k] = MathLibrary::vector2i(model->uv(i, k).x*width, model->uv(i, k).y*height);
+                uv[k] = MathLibrary::vector2i(model->uv(i, k).x, model->uv(i, k).y);
             }
             triangle(screen_coords, uv, image, intensity, zbuffer);
         }
