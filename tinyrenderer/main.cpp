@@ -50,6 +50,7 @@ void triangle(MathLibrary::vector3i* points,MathLibrary::vector2i* uvs,
 {
     if (points[0].y == points[1].y && points[1].y == points[2].y)
     {
+        //count++;
         return;
     }
     if (points[0].y > points[1].y)
@@ -67,7 +68,6 @@ void triangle(MathLibrary::vector3i* points,MathLibrary::vector2i* uvs,
         std::swap(points[1], points[2]);
         std::swap(uvs[1], uvs[2]);
     }
-
     int total_height = points[2].y - points[0].y;
 
     for (int y = 0; y < total_height; ++y)
@@ -88,23 +88,29 @@ void triangle(MathLibrary::vector3i* points,MathLibrary::vector2i* uvs,
             std::swap(uvA, uvB);
         }
 
-        for (int x = A.x; x < B.x; ++x)
+        for (int x = A.x; x <= B.x; ++x)
         {
             float phi = (B.x == A.x) ? 1.0f : float(x - A.x) / (float)(B.x - A.x);
             MathLibrary::vector3f ret = A + phi*(B-A);
-            //MathLibrary::vector3i p = MathLibrary::vector3i((int)(ret.x+0.5f), (int)(ret.y+0.5f), (int)(ret.z+0.5f));
             MathLibrary::vector2i uvP = uvA + phi * (uvB - uvA);
             int idx = ret.x + ret.y * width;
             if (zbuffer[idx] < ret.z)
             {
                 zbuffer[idx] = ret.z;
                 TGAColor color = model->diffuse(MathLibrary::vector2f(uvP.x, uvP.y));
-                image.set(ret.x, y+points[0].y, color);
+                if (intensity > 0)
+                {
+                    image.set(ret.x, y + points[0].y, TGAColor(color[2] * intensity, color[1] * intensity, color[0] * intensity));
+                }
+                else
+                {
+                    image.set(ret.x, y + points[0].y, TGAColor(255,0,0,255));
+                }
                 //count++;
             }
             else
             {
-                count++;
+                //image.set(ret.x, y + points[0].y, TGAColor(0, 255, 0, 255));
             }
         }
     }
@@ -141,12 +147,23 @@ int main(int argc, char** argv)
             MathLibrary::vector2i uv[3];
             for (int k = 0; k < 3; ++k)
             {
-                uv[k] = MathLibrary::vector2i(model->uv(i, k).x, model->uv(i, k).y);
+                uv[k] = MathLibrary::vector2i(model->uv(i, k).x + 0.5f, model->uv(i, k).y + 0.5f);
+            }
+            triangle(screen_coords, uv, image, intensity, zbuffer);
+        }
+        else
+        {
+            MathLibrary::vector2i uv[3];
+            for (int k = 0; k < 3; ++k)
+            {
+                uv[k] = MathLibrary::vector2i(model->uv(i, k).x + 0.5f, model->uv(i, k).y + 0.5f);
             }
             triangle(screen_coords, uv, image, intensity, zbuffer);
         }
     }
     image.write_tga_file("output.tga");
     std::cout << count;
+    delete model;
+    delete[] zbuffer;
     return 0;
 }
