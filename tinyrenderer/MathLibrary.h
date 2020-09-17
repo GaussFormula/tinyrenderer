@@ -143,6 +143,9 @@ namespace MathLibrary
 			:x(x),y(y),z(z)
 		{}
 
+		template<typename U>
+		vector<3, T>(const vector<3, U>& rhs);
+
 
         vector(const vector& rhs)
         {
@@ -473,17 +476,13 @@ namespace MathLibrary
 	typedef vector<3, float> vector3f;
 	typedef vector<4, float> vector4f;
 
+	template<> template<>
+	vector3f::vector(const vector3i& rhs);
+
+	template<> template<>
+	vector3i::vector(const vector3f& rhs);
 	
 
-    template<typename T>
-    vector<3, T> cross(const vector<3, T>& v1, const vector<3, T>& v2)
-    {
-        vector<3, T> ret;
-        ret[0] = v1[1] * v2[2] - v1[2] * v2[1];
-        ret[1] = v1[2] * v2[0] - v1[0] * v2[2];
-        ret[2] = v1[0] * v2[1] - v1[1] * v2[0];
-        return ret;
-        //{ v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0] };
-    }
+	vector<3, int> cross(const vector<3, int>& v1, const vector<3, int>& v2);
 }
 

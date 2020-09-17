@@ -91,9 +91,7 @@ void triangle(MathLibrary::vector3i* points,MathLibrary::vector2i* uvs,
         for (int x = A.x; x < B.x; ++x)
         {
             float phi = B.x == A.x ? 1.0f : float(x - A.x) / (float)(B.x - A.x);
-            MathLibrary::vector3f tempA((float)A.x, (float)A.y, (float)A.z);
-            MathLibrary::vector3f tempBA((float)(B - A).x, (float)(B - A).y, (float)(B - A).z);
-            MathLibrary::vector3f ret = tempA + tempBA;
+            MathLibrary::vector3f ret = A + phi*(B-A);
             MathLibrary::vector3i p = MathLibrary::vector3i((int)(ret.x+0.5f), (int)(ret.y+0.5f), (int)(ret.z+0.5f));
             MathLibrary::vector2i uvP = uvA + phi * (uvB - uvA);
             int idx = p.x + p.y * width;
@@ -102,6 +100,7 @@ void triangle(MathLibrary::vector3i* points,MathLibrary::vector2i* uvs,
                 zbuffer[idx] = p.z;
                 TGAColor color = model->diffuse(MathLibrary::vector2f(uvP.x, uvP.y));
                 image.set(p.x, p.y, color);
+                count++;
             }
         }
     }
@@ -132,7 +131,7 @@ int main(int argc, char** argv)
             world_coords[j] = MathLibrary::vector3i(v.x + 0.5f, v.y + 0.5f, v.z + 0.5f);
         }
 
-        MathLibrary::vector<3, int> int_n = cross<int>(screen_coords[2] - screen_coords[0], screen_coords[1] - screen_coords[0]);
+        MathLibrary::vector<3, int> int_n = MathLibrary::cross(screen_coords[2] - screen_coords[0], screen_coords[1] - screen_coords[0]);
         MathLibrary::vector3f n = MathLibrary::vector3f(int_n.x, int_n.y, int_n.z);
         n.normalize();
         float intensity = n * light_dir;
@@ -141,11 +140,12 @@ int main(int argc, char** argv)
             MathLibrary::vector2i uv[3];
             for (int k = 0; k < 3; ++k)
             {
-                uv[k] = MathLibrary::vector2i(model->uv(i, k).x, model->uv(i, k).y);
+                uv[k] = MathLibrary::vector2i(model->uv(i, k).x*width, model->uv(i, k).y*height);
             }
             triangle(screen_coords, uv, image, intensity, zbuffer);
         }
     }
     image.write_tga_file("output.tga");
+    std::cout << count;
     return 0;
 }

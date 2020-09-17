@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 #pragma pack(push,1)
 struct TGA_Header {
@@ -42,7 +43,19 @@ struct TGAColor {
         for (int i = 0; i < 4; i++) res.bgra[i] = (std::uint8_t)(bgra[i] * clamped);
         return res;
     }
+
+    
 };
+
+static std::ostream& operator<<(std::ostream& out,const TGAColor&rhs)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        out << rhs.bgra[i] << " ";
+    }
+    out << std::endl;
+    return out;
+}
 
 class TGAImage {
 protected:
