@@ -6,163 +6,120 @@
 #include "TgaImage.h"
 #include "Model.h"
 
-constexpr int width = 1000;
-constexpr int height = 1280;
-constexpr int depth = 255;
-static std::uint64_t count = 0;
-Model* model = nullptr;
-int* zbuffer = nullptr;
+const int width = 800;
+const int height = 800;
+const int depth = 255;
 
-MathLibrary::vector3f light_dir(0, 0, -1);
-MathLibrary::vector3f camera(0, 0, 3);
+Model* model = NULL;
+int* zbuffer = NULL;
+Vec3f light_dir(0, 0, -1);
+Vec3f camera(0, 0, 3);
 
-MathLibrary::vector3f m2v(MathLibrary::Matrix m)
-{
-    return MathLibrary::vector3f(m[0][0] / m[3][0], m[1][0] / m[3][0], m[2][0] / m[3][0]);
+Vec3f m2v(Matrix m) {
+    return Vec3f(m[0][0] / m[3][0], m[1][0] / m[3][0], m[2][0] / m[3][0]);
 }
 
-MathLibrary::Matrix v2m(MathLibrary::vector3f& v)
-{
-    MathLibrary::Matrix m(4,1);
+Matrix v2m(Vec3f v) {
+    Matrix m(4, 1);
     m[0][0] = v.x;
     m[1][0] = v.y;
     m[2][0] = v.z;
-    m[3][0] = 1.0f;
+    m[3][0] = 1.f;
     return m;
 }
 
-MathLibrary::Matrix viewport(int x, int y, int width, int height)
-{
-    MathLibrary::Matrix m = MathLibrary::Matrix::identity(4);
-    m[0][3] = x + width / 2.0f;
-    m[1][3] = y + height / 2.0f;
-    m[2][3] = depth / 2.0f;
+Matrix viewport(int x, int y, int w, int h) {
+    Matrix m = Matrix::identity(4);
+    m[0][3] = x + w / 2.f;
+    m[1][3] = y + h / 2.f;
+    m[2][3] = depth / 2.f;
 
-    m[0][0] = width / 2.f;
-    m[1][1] = height / 2.0f;
-    m[2][2] = depth / 2.0f;
-
+    m[0][0] = w / 2.f;
+    m[1][1] = h / 2.f;
+    m[2][2] = depth / 2.f;
     return m;
 }
 
-void triangle(MathLibrary::vector3i* points,MathLibrary::vector2i* uvs,
-    TGAImage&image,float intensity,int* zbuffer)
-{
-    if (points[0].y == points[1].y && points[1].y == points[2].y)
-    {
-        //count++;
-        return;
-    }
-    if (points[0].y > points[1].y)
-    {
-        std::swap(points[0], points[2]);
-        std::swap(uvs[0], uvs[1]);
-    }
-    if (points[0].y > points[2].y)
-    {
-        std::swap(points[0], points[2]);
-        std::swap(uvs[0], uvs[2]);
-    }
-    if (points[1].y > points[2].y)
-    {
-        std::swap(points[1], points[2]);
-        std::swap(uvs[1], uvs[2]);
-    }
-    int total_height = points[2].y - points[0].y;
+void triangle(Vec3i t0, Vec3i t1, Vec3i t2, Vec2i uv0, Vec2i uv1, Vec2i uv2, TGAImage& image, float intensity, int* zbuffer) {
+    if (t0.y == t1.y && t0.y == t2.y) return; // i dont care about degenerate triangles
+    if (t0.y > t1.y) { std::swap(t0, t1); std::swap(uv0, uv1); }
+    if (t0.y > t2.y) { std::swap(t0, t2); std::swap(uv0, uv2); }
+    if (t1.y > t2.y) { std::swap(t1, t2); std::swap(uv1, uv2); }
 
-    for (int y = 0; y < total_height; ++y)
-    {
-        bool second_half = y > points[1].y - points[0].y || points[0].y == points[1].y;
-        int current_segment_height = second_half ? points[2].y - points[1].y : points[1].y - points[0].y;
-        float alpha = float(y) / total_height;
-        float beta = (float)(y - (second_half ? points[1].y - points[0].y : 0)) / current_segment_height;
-        MathLibrary::vector3i A = points[0] + (points[2] - points[0]) * alpha;
-        MathLibrary::vector3i B = second_half ? points[1] + (points[2] - points[1]) * beta : points[0] + (points[1] - points[0]) * beta;
-
-        MathLibrary::vector2i uvA = uvs[0] + (uvs[2] - uvs[0]) * beta;
-        MathLibrary::vector2i uvB = second_half ? uvs[1] + (uvs[2] - uvs[1]) * beta : uvs[0] + (uvs[1] - uvs[0]) * beta;
-
-        if (A.x > B.x)
-        {
-            std::swap(A, B);
-            std::swap(uvA, uvB);
-        }
-
-        for (int x = A.x; x <= B.x; ++x)
-        {
-            float phi = (B.x == A.x) ? 1.0f : float(x - A.x) / (float)(B.x - A.x);
-            MathLibrary::vector3f ret = A + (B - A) * beta;
-            MathLibrary::vector2i uvP = uvA + (uvB - uvA) * beta;
-            int idx = ret.x + ret.y * width;
-            if (zbuffer[idx] < ret.z)
-            {
-                zbuffer[idx] = ret.z;
-                TGAColor color = model->diffuse(MathLibrary::vector2f(uvP.x, uvP.y));
-                if (intensity > 0)
-                {
-                    image.set(ret.x, y + points[0].y, TGAColor(color[2] * intensity, color[1] * intensity, color[0] * intensity));
-                }
-                else
-                {
-                    image.set(ret.x, y + points[0].y, TGAColor(255,0,0,255));
-                }
-                //count++;
-            }
-            else
-            {
-                //image.set(ret.x, y + points[0].y, TGAColor(0, 255, 0, 255));
+    int total_height = t2.y - t0.y;
+    for (int i = 0; i < total_height; i++) {
+        bool second_half = i > t1.y - t0.y || t1.y == t0.y;
+        int segment_height = second_half ? t2.y - t1.y : t1.y - t0.y;
+        float alpha = (float)i / total_height;
+        float beta = (float)(i - (second_half ? t1.y - t0.y : 0)) / segment_height; // be careful: with above conditions no division by zero here
+        Vec3i A = t0 + Vec3f(t2 - t0) * alpha;
+        Vec3i B = second_half ? t1 + Vec3f(t2 - t1) * beta : t0 + Vec3f(t1 - t0) * beta;
+        Vec2i uvA = uv0 + (uv2 - uv0) * alpha;
+        Vec2i uvB = second_half ? uv1 + (uv2 - uv1) * beta : uv0 + (uv1 - uv0) * beta;
+        if (A.x > B.x) { std::swap(A, B); std::swap(uvA, uvB); }
+        for (int j = A.x; j <= B.x; j++) {
+            float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
+            Vec3i   P = Vec3f(A) + Vec3f(B - A) * phi;
+            Vec2i uvP = uvA + (uvB - uvA) * phi;
+            int idx = P.x + P.y * width;
+            if (zbuffer[idx] < P.z) {
+                zbuffer[idx] = P.z;
+                TGAColor color = model->diffuse(uvP);
+                image.set(P.x, P.y, TGAColor(color[2] * intensity, color[1] * intensity, color[0] * intensity));
             }
         }
     }
 }
 
+int main(int argc, char** argv) {
 
-int main(int argc, char** argv)
-{
     model = new Model("african_head.obj");
     zbuffer = new int[width * height];
-    memset(zbuffer, std::numeric_limits<int>::min(), sizeof(int) * width * height);
-
-    MathLibrary::Matrix Projection = MathLibrary::Matrix::identity(4);
-    MathLibrary::Matrix ViewPort = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
-    Projection[3][2] = -1.f / camera.z;
-
-    TGAImage image(width, height, TGAImage::RGB);
-    for (int i = 0; i < model->nfaces(); ++i)
-    {
-        MathLibrary::vector3i screen_coords[3];
-        MathLibrary::vector3f world_coords[3];
-
-        for (int j = 0; j < 3; ++j)
-        {
-            MathLibrary::vector3f v = model->vert(i, j);
-            screen_coords[j] = m2v(ViewPort * Projection * v2m(v));
-            world_coords[j] = v;
-        }
-        MathLibrary::vector3f n = MathLibrary::cross(world_coords[2] - world_coords[0], world_coords[1] - world_coords[0]);
-        n.normalize();
-        float intensity = n * light_dir;
-        if (intensity > 0)
-        {
-            MathLibrary::vector2i uv[3];
-            for (int k = 0; k < 3; ++k)
-            {
-                uv[k] = MathLibrary::vector2i(model->uv(i, k).x + 0.5f, model->uv(i, k).y + 0.5f);
-            }
-            triangle(screen_coords, uv, image, intensity, zbuffer);
-        }
-        else
-        {
-            MathLibrary::vector2i uv[3];
-            for (int k = 0; k < 3; ++k)
-            {
-                uv[k] = MathLibrary::vector2i(model->uv(i, k).x + 0.5f, model->uv(i, k).y + 0.5f);
-            }
-            triangle(screen_coords, uv, image, intensity, zbuffer);
-        }
+    for (int i = 0; i < width * height; i++) {
+        zbuffer[i] = std::numeric_limits<int>::min();
     }
-    image.write_tga_file("output.tga");
-    std::cout << count;
+
+    { // draw the model
+        Matrix Projection = Matrix::identity(4);
+        Matrix ViewPort = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
+        Projection[3][2] = -1.f / camera.z;
+
+        TGAImage image(width, height, TGAImage::RGB);
+        for (int i = 0; i < model->nfaces(); i++) {
+            std::vector<int> face = model->face(i);
+            Vec3i screen_coords[3];
+            Vec3f world_coords[3];
+            for (int j = 0; j < 3; j++) {
+                Vec3f v = model->vert(face[j]);
+                screen_coords[j] = m2v(ViewPort * Projection * v2m(v));
+                world_coords[j] = v;
+            }
+            Vec3f n = (world_coords[2] - world_coords[0]) ^ (world_coords[1] - world_coords[0]);
+            n.normalize();
+            float intensity = n * light_dir;
+            if (intensity > 0) {
+                Vec2i uv[3];
+                for (int k = 0; k < 3; k++) {
+                    uv[k] = model->uv(i, k);
+                }
+                triangle(screen_coords[0], screen_coords[1], screen_coords[2], uv[0], uv[1], uv[2], image, intensity, zbuffer);
+            }
+        }
+
+        image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
+        image.write_tga_file("output.tga");
+    }
+
+    //{ // dump z-buffer (debugging purposes only)
+    //    TGAImage zbimage(width, height, TGAImage::GRAYSCALE);
+    //    for (int i = 0; i < width; i++) {
+    //        for (int j = 0; j < height; j++) {
+    //            zbimage.set(i, j, TGAColor(zbuffer[i + j * width], 1));
+    //        }
+    //    }
+    //    zbimage.flip_vertically(); // i want to have the origin at the left bottom corner of the image
+    //    zbimage.write_tga_file("zbuffer.tga");
+    //}
     delete model;
     delete[] zbuffer;
     return 0;
