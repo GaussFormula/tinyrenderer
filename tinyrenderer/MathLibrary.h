@@ -149,6 +149,11 @@ namespace MathLibrary
         return out;
     }
 
+    typedef vector2<int> vector2i;
+    typedef vector2<float> vector2f;
+    typedef vector3<int> vector3i;
+    typedef vector3<float> vector3f;
+
     template<class T>
     MathLibrary::vector3<T> cross(const MathLibrary::vector3<T>& lhs, const MathLibrary::vector3<T>& rhs);
 }
