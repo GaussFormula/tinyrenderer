@@ -140,7 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MathLibrary.cpp" />
+    <ClCompile Include="MathLibrary.hpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="TgaImage.cpp" />
   </ItemGroup>

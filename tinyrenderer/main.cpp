@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "MathLibrary.h"
+#include "MathLibrary.hpp"
 #include "TgaImage.h"
 #include "Model.h"
 
