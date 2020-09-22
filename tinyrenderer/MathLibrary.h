@@ -142,6 +142,14 @@ namespace MathLibrary
         }
     };
 
+    template<> 
+    template<>
+    vector3<int>::vector3(const vector3<float>& v);
+
+    template<> 
+    template<>
+    vector3<float>::vector3(const vector3<int>& v);
+
     template<typename T>
     std::ostream& operator<<(std::ostream& out, const vector3<T>& rhs)
     {
@@ -156,4 +164,24 @@ namespace MathLibrary
 
     template<class T>
     MathLibrary::vector3<T> cross(const MathLibrary::vector3<T>& lhs, const MathLibrary::vector3<T>& rhs);
+
+    const int DEFAULT_ALLOC = 4;
+    class Matrix
+    {
+        std::vector<std::vector<float>> m;
+        int rows, cols;
+    public:
+        Matrix(int r = DEFAULT_ALLOC, int c = DEFAULT_ALLOC);
+        inline int nrows()const;
+        inline int ncols()const;
+
+        static Matrix identity(int dimensions);
+
+        std::vector<float>& operator[](const int i);
+        Matrix operator*(const Matrix& rhs);
+        Matrix transpose();
+        Matrix inverse();
+    };
+
+    std::ostream& operator<<(std::ostream& out, Matrix& m);
 }
