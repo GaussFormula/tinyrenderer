@@ -146,4 +146,14 @@ namespace MathLibrary
         }
         return out;
     }
+
+    Matrix& Matrix::operator=(const Matrix& rhs)
+    {
+        assert(rows == rhs.rows && cols == rhs.cols);
+        if (this != &rhs)
+        {
+            this->m = rhs.m;
+        }
+        return *this;
+    }
 }

@@ -181,6 +181,7 @@ namespace MathLibrary
 
         static Matrix identity(int dimensions);
 
+        Matrix& operator=(const Matrix& rhs);
         std::vector<float>& operator[](const int i);
         Matrix operator*(const Matrix& rhs);
         Matrix transpose();
