@@ -17,8 +17,6 @@ MathLibrary::vector3f camera(0, 0, 3);
 
 int main()
 {
-    MathLibrary::vector3<int> v1(0, 2, 0);
-    MathLibrary::vector3<float> v2(v1);
-    std::cout << v2;
+    std::cout << MathLibrary::Matrix::identity(3);
     return 0;
 }

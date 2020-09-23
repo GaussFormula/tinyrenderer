@@ -185,7 +185,9 @@ namespace MathLibrary
         Matrix operator*(const Matrix& rhs);
         Matrix transpose();
         Matrix inverse();
+
+        
     };
 
-    std::ostream& operator<<(std::ostream& out, Matrix& m);
+    std::ostream& operator<<(std::ostream& out,const Matrix& rhs);
 }
