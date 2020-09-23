@@ -171,7 +171,7 @@ bool TGAImage::write_tga_file(const char* filename, bool rle) {
 		return false;
 	}
 	if (!rle) {
-		out.write((char*)data, width * height * bytespp);
+		out.write((char*)data, (size_t)width * height * bytespp);
 		if (!out.good()) {
 			std::cerr << "can't unload raw data\n";
 			out.close();
@@ -254,14 +254,14 @@ TGAColor TGAImage::get(int x, int y) {
 	if (!data || x < 0 || y < 0 || x >= width || y >= height) {
 		return TGAColor();
 	}
-	return TGAColor(data + (x + y * width) * bytespp, bytespp);
+	return TGAColor(data + (x + y * (size_t)width) * bytespp, bytespp);
 }
 
 bool TGAImage::set(int x, int y, TGAColor c) {
 	if (!data || x < 0 || y < 0 || x >= width || y >= height) {
 		return false;
 	}
-	memcpy(data + (x + y * width) * bytespp, c.raw, bytespp);
+	memcpy(data + ((size_t)x + (size_t)y * (size_t)width) * (size_t)bytespp, c.raw, bytespp);
 	return true;
 }
 
@@ -312,12 +312,12 @@ unsigned char* TGAImage::buffer() {
 }
 
 void TGAImage::clear() {
-	memset((void*)data, 0, width * height * bytespp);
+	memset((void*)data, 0, (size_t)width * height * bytespp);
 }
 
 bool TGAImage::scale(int w, int h) {
 	if (w <= 0 || h <= 0 || !data) return false;
-	unsigned char* tdata = new unsigned char[w * h * bytespp];
+	unsigned char* tdata = new unsigned char[(size_t)w * h * (size_t)bytespp];
 	int nscanline = 0;
 	int oscanline = 0;
 	int erry = 0;
