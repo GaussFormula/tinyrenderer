@@ -6,8 +6,8 @@
 #include "TgaImage.h"
 #include "Model.h"
 
-const int width = 800*40;
-const int height = 800*40;
+const int width = 1024*128;
+const int height = 1024*128;
 const int depth = 255;
 
 Model* model = nullptr;
@@ -104,16 +104,19 @@ void triangle(std::vector<MathLibrary::vector3i> points, std::vector<MathLibrary
 int main()
 {
     model = new Model("african_head.obj");
+    //int* zbuffer = new int[(size_t)width * (size_t)height];
     std::vector<int> zbuffer;
-    zbuffer.resize((size_t)width * height);
-    for (size_t i = 0; i < (size_t)width * height; ++i)
+    zbuffer.resize((size_t)width * (size_t)height, std::numeric_limits<int>::min());
+    /*for (size_t i = 0; i < zbuffer.size(); ++i)
     {
         zbuffer[i] = std::numeric_limits<int>::min();
-    }
-    //memset(zbuffer, std::numeric_limits<int>::min(), sizeof(int) * width * height);
+    }*/
     MathLibrary::Matrix Projection = MathLibrary::Matrix::identity(4);
     MathLibrary::Matrix Viewport = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
     Projection[3][2] = -1.0f / camera.z;
+    //memset(zbuffer, std::numeric_limits<int>::min(), sizeof(int) * (size_t)width * (size_t)height);
+    
+    
 
     TGAImage image(width, height, TGAImage::RGB);
     for (int i = 0; i < model->nfaces(); ++i)
@@ -141,9 +144,11 @@ int main()
             }
             triangle(screen_coords, uv, image, intensity, zbuffer);
         }
+        std::cout << (float)i / model->nfaces() * 100 << "%" << std::endl;
     }
-    image.flip_vertically();
+    //image.flip_vertically();
     image.write_tga_file("output.tga");
+    //delete[] zbuffer;
     delete model;
     return 0;
 }

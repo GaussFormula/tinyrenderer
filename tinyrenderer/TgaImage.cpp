@@ -7,7 +7,7 @@ TGAImage::TGAImage() : data(NULL), width(0), height(0), bytespp(0) {
 }
 
 TGAImage::TGAImage(int w, int h, int bpp) : data(NULL), width(w), height(h), bytespp(bpp) {
-	unsigned long nbytes = width * height * bytespp;
+	size_t nbytes = (size_t)width * height * bytespp;
 	data = new unsigned char[nbytes];
 	memset(data, 0, nbytes);
 }
@@ -210,11 +210,11 @@ bool TGAImage::write_tga_file(const char* filename, bool rle) {
 // TODO: it is not necessary to break a raw chunk for two equal pixels (for the matter of the resulting size)
 bool TGAImage::unload_rle_data(std::ofstream& out) {
 	const unsigned char max_chunk_length = 128;
-	unsigned long npixels = width * height;
-	unsigned long curpix = 0;
+	size_t npixels = (size_t)width * (size_t)height;
+	size_t curpix = 0;
 	while (curpix < npixels) {
-		unsigned long chunkstart = curpix * bytespp;
-		unsigned long curbyte = curpix * bytespp;
+		size_t chunkstart = curpix * bytespp;
+		size_t curbyte = curpix * bytespp;
 		unsigned char run_length = 1;
 		bool raw = true;
 		while (curpix + run_length < npixels && run_length < max_chunk_length) {
@@ -261,7 +261,8 @@ bool TGAImage::set(int x, int y, TGAColor c) {
 	if (!data || x < 0 || y < 0 || x >= width || y >= height) {
 		return false;
 	}
-	memcpy(data + ((size_t)x + (size_t)y * (size_t)width) * (size_t)bytespp, c.raw, bytespp);
+	size_t temp = ((size_t)x + (size_t)y * (size_t)width) * (size_t)bytespp;
+	memcpy(data + temp, c.raw, bytespp);
 	return true;
 }
 
@@ -293,12 +294,12 @@ bool TGAImage::flip_horizontally() {
 
 bool TGAImage::flip_vertically() {
 	if (!data) return false;
-	unsigned long bytes_per_line = width * bytespp;
+	size_t bytes_per_line = (size_t)width * (size_t)bytespp;
 	unsigned char* line = new unsigned char[bytes_per_line];
 	int half = height >> 1;
 	for (int j = 0; j < half; j++) {
-		unsigned long l1 = j * bytes_per_line;
-		unsigned long l2 = (height - 1 - j) * bytes_per_line;
+		size_t l1 = j * bytes_per_line;
+		size_t l2 = ((size_t)height - 1 - (size_t)j) * bytes_per_line;
 		memmove((void*)line, (void*)(data + l1), bytes_per_line);
 		memmove((void*)(data + l1), (void*)(data + l2), bytes_per_line);
 		memmove((void*)(data + l2), (void*)line, bytes_per_line);
