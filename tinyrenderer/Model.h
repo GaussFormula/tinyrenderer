@@ -20,6 +20,7 @@ public:
 	int nfaces();
 	MathLibrary::vector3f vert(int i);
 	MathLibrary::vector2i uv(int iface, int nvert);
+	MathLibrary::vector3f norm(int iface, int nvert);
 	TGAColor diffuse(MathLibrary::vector2i uv);
 	std::vector<int> face(int idx);
 };
