@@ -6,8 +6,8 @@
 #include "TgaImage.h"
 #include "Model.h"
 
-const int width = 1024*128;
-const int height = 1024*128;
+const int width = 1024*32;
+const int height = 1024*32;
 const int depth = 255;
 
 Model* model = nullptr;
@@ -146,7 +146,7 @@ int main()
         }
         std::cout << (float)i / model->nfaces() * 100 << "%" << std::endl;
     }
-    //image.flip_vertically();
+    image.flip_vertically();
     image.write_tga_file("output.tga");
     //delete[] zbuffer;
     delete model;
