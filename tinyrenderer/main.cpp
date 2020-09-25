@@ -44,6 +44,23 @@ MathLibrary::Matrix viewport(int x, int y, int width, int height)
     return m;
 }
 
+MathLibrary::Matrix lookat(MathLibrary::vector3f eye, MathLibrary::vector3f center, MathLibrary::vector3f up)
+{
+    MathLibrary::vector3f z = (center - eye).normalize();
+    MathLibrary::vector3f x = (MathLibrary::cross(up, z)).normalize();
+    MathLibrary::vector3f y = MathLibrary::cross(z, x).normalize();
+
+    MathLibrary::Matrix res = MathLibrary::Matrix::identity(4);
+    for (int i = 0; i < 3; ++i)
+    {
+        res[0][i] = x[i];
+        res[1][i] = y[i];
+        res[2][i] = z[i];
+        res[i][3] = -center[i];
+    }
+    return res;
+}
+
 void triangle(std::vector<MathLibrary::vector3i> points, std::vector<MathLibrary::vector2i> uvs,
     TGAImage& image, float intensity, std::vector<int>& zbuffer)
 {
@@ -95,7 +112,7 @@ void triangle(std::vector<MathLibrary::vector3i> points, std::vector<MathLibrary
             {
                 zbuffer[idx] = P.z;
                 TGAColor color = model->diffuse(uvP);
-                image.set(P.x, P.y, TGAColor(color.r * intensity, color.g * intensity, color.b * intensity, 255));
+                image.set(P.x, P.y, TGAColor(color.bgra[2] * intensity, color.bgra[1] * intensity, color.bgra[0] * intensity, 255));
             }
         }
     }
@@ -103,52 +120,54 @@ void triangle(std::vector<MathLibrary::vector3i> points, std::vector<MathLibrary
 
 int main()
 {
-    model = new Model("african_head.obj");
-    //int* zbuffer = new int[(size_t)width * (size_t)height];
-    std::vector<int> zbuffer;
-    zbuffer.resize((size_t)width * (size_t)height, std::numeric_limits<int>::min());
-    /*for (size_t i = 0; i < zbuffer.size(); ++i)
-    {
-        zbuffer[i] = std::numeric_limits<int>::min();
-    }*/
-    MathLibrary::Matrix Projection = MathLibrary::Matrix::identity(4);
-    MathLibrary::Matrix Viewport = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
-    Projection[3][2] = -1.0f / camera.z;
-    //memset(zbuffer, std::numeric_limits<int>::min(), sizeof(int) * (size_t)width * (size_t)height);
-    
-    
+    //model = new Model("african_head.obj");
+    ////int* zbuffer = new int[(size_t)width * (size_t)height];
+    //std::vector<int> zbuffer;
+    //zbuffer.resize((size_t)width * (size_t)height, std::numeric_limits<int>::min());
+    ///*for (size_t i = 0; i < zbuffer.size(); ++i)
+    //{
+    //    zbuffer[i] = std::numeric_limits<int>::min();
+    //}*/
+    //MathLibrary::Matrix Projection = MathLibrary::Matrix::identity(4);
+    //MathLibrary::Matrix Viewport = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
+    //Projection[3][2] = -1.0f / camera.z;
+    ////memset(zbuffer, std::numeric_limits<int>::min(), sizeof(int) * (size_t)width * (size_t)height);
+    //
+    //
 
-    TGAImage image(width, height, TGAImage::RGB);
-    for (int i = 0; i < model->nfaces(); ++i)
-    {
-        std::vector<int> face = model->face(i);
-        std::vector<MathLibrary::vector3i> screen_coords;
-        MathLibrary::vector3f world_coords[3];
+    //TGAImage image(width, height, TGAImage::RGB);
+    //for (int i = 0; i < model->nfaces(); ++i)
+    //{
+    //    std::vector<int> face = model->face(i);
+    //    std::vector<MathLibrary::vector3i> screen_coords;
+    //    MathLibrary::vector3f world_coords[3];
 
-        for (int j = 0; j < 3; ++j)
-        {
-            MathLibrary::vector3f v = model->vert(face[j]);
-            screen_coords.push_back(m2v(Viewport * Projection * v2m(v)));
-            world_coords[j] = v;
-        }
+    //    for (int j = 0; j < 3; ++j)
+    //    {
+    //        MathLibrary::vector3f v = model->vert(face[j]);
+    //        screen_coords.push_back(m2v(Viewport * Projection * v2m(v)));
+    //        world_coords[j] = v;
+    //    }
 
-        MathLibrary::vector3f n = MathLibrary::cross(world_coords[2] - world_coords[0], world_coords[1] - world_coords[0]);
-        n.normalize();
-        float intensity = n * lightDir;
-        if (intensity > 0)
-        {
-            std::vector<MathLibrary::vector2i> uv;
-            for (int k = 0; k < 3; ++k)
-            {
-                uv.push_back(model->uv(i, k));
-            }
-            triangle(screen_coords, uv, image, intensity, zbuffer);
-        }
-        std::cout << (float)i / model->nfaces() * 100 << "%" << std::endl;
-    }
-    image.flip_vertically();
-    image.write_tga_file("output.tga");
-    //delete[] zbuffer;
-    delete model;
+    //    MathLibrary::vector3f n = MathLibrary::cross(world_coords[2] - world_coords[0], world_coords[1] - world_coords[0]);
+    //    n.normalize();
+    //    float intensity = n * lightDir;
+    //    if (intensity > 0)
+    //    {
+    //        std::vector<MathLibrary::vector2i> uv;
+    //        for (int k = 0; k < 3; ++k)
+    //        {
+    //            uv.push_back(model->uv(i, k));
+    //        }
+    //        triangle(screen_coords, uv, image, intensity, zbuffer);
+    //    }
+    //    std::cout << (float)i / model->nfaces() * 100 << "%" << std::endl;
+    //}
+    //image.flip_vertically();
+    //image.write_tga_file("output.tga");
+    ////delete[] zbuffer;
+    //delete model;
+    MathLibrary::Matrix m = lookat(MathLibrary::vector3f(1, 0, 0), MathLibrary::vector3f(0, 0, 0), MathLibrary::vector3f(0, 1, 0));
+    std::cout << m*MathLibrary::vector3f(1,0,0);
     return 0;
 }

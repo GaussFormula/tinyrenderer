@@ -156,4 +156,12 @@ namespace MathLibrary
         }
         return *this;
     }
+
+    Matrix::Matrix(const vector3f& v)
+        :m(std::vector<std::vector<float>>(4,std::vector<float>(1,1.0f))),rows(4),cols(1)
+    {
+        m[0][0] = v.x;
+        m[1][0] = v.y;
+        m[2][0] = v.z;
+    }
 }

@@ -176,6 +176,7 @@ namespace MathLibrary
         int rows, cols;
     public:
         Matrix(int r = DEFAULT_ALLOC, int c = DEFAULT_ALLOC);
+        Matrix(const vector3f& v);
         inline int nrows()const;
         inline int ncols()const;
 
