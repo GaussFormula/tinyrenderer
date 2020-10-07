@@ -13,26 +13,10 @@ const int depth = 255;
 
 Model* model = nullptr;
 
-MathLibrary::vector3f lightDir(0, 0, -1);
-MathLibrary::vector3f eye(2, 2, 2);
+MathLibrary::vector3f lightDir(0, 0, 5);
+MathLibrary::vector3f eye(2, 0, 2);
 MathLibrary::vector3f center(0, 0, 0);
 MathLibrary::vector3f up(0, 1, 0);
-
-MathLibrary::vector3f m2v(const MathLibrary::Matrix<4,1,float>& m)
-{
-    MathLibrary::Matrix<4, 1, float>& m1 = const_cast<MathLibrary::Matrix<4, 1, float>&>(m);
-    return MathLibrary::vector3f(m1[0][0] / m1[3][0], m1[1][0] / m1[3][0], m1[2][0] / m1[3][0]);
-}
-
-MathLibrary::Matrix<4,1,float> v2m(const MathLibrary::vector3f& v)
-{
-    MathLibrary::Matrix<4,1,float> m;
-    m[0][0] = v.x;
-    m[1][0] = v.y;
-    m[2][0] = v.z;
-    m[3][0] = 1.0f;
-    return m;
-}
 
 class GouraudShader :public IShader
 {
@@ -43,18 +27,29 @@ private:
 
 public:
     MathLibrary::vector3f varying_intensity;// written by vertex shader, read by fragment shader.
+    MathLibrary::Matrix<2, 3, float> varying_uv;
+
     virtual MathLibrary::vector4f vertex(int iface, int nthvert)
     {
+        varying_uv.set_col(nthvert, model->uv(iface, nthvert));
+        float temp = model->norm(iface, nthvert) * lightDir;
+        varying_intensity[nthvert] = std::fmax(0.0f, model->norm(model->uv(iface, nthvert)) * lightDir);
         MathLibrary::vector4f gl_vertex = MathLibrary::embed<4>(model->vert(iface, nthvert));
-        gl_vertex = Viewport * Projection * ModelView * gl_vertex;
-        varying_intensity[nthvert] = std::fmax(0.0f, model->norm(iface, nthvert) * lightDir);
-        return gl_vertex;
+        return Viewport * Projection * ModelView * gl_vertex;
     }
 
     virtual bool fragment(MathLibrary::vector3f bar, TGAColor& color)
     {
+        //assert(varying_intensity[0] != 0.0f || varying_intensity[1] != 0.0f || varying_intensity[1] != 0.0f);
+
         float intensity = varying_intensity * bar;
-        color = TGAColor(255, 255, 255) * intensity;
+        /*if (varying_intensity[0] == 0.0f && varying_intensity[1] == 0.0f && varying_intensity[1] == 0.0f)
+        {
+            intensity = MathLibrary::vector3f(0.8f, 0.7f, 0.9f) * bar;
+        }*/
+        MathLibrary::vector2f uv = varying_uv * bar;
+        TGAColor temp = model->diffuse(uv);
+        color = model->diffuse(uv) * intensity;
         return false;
     }
 

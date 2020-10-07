@@ -49,7 +49,7 @@ MathLibrary::vector3f barycentric(const MathLibrary::vector2f& A,const MathLibra
     MathLibrary::vector3f u = cross(s[0], s[1]);
     if (std::abs(u[2]) > 1e-2)
     {
-        return MathLibrary::vector3f(1.0f - (u.x + u.y), u.y / u.z, u.x / u.z);
+        return MathLibrary::vector3f(1.0f - (u.x + u.y)/u.z, u.x / u.z, u.y / u.z);
     }
     return MathLibrary::vector3f(-1, 1, 1);
 }
@@ -57,7 +57,7 @@ MathLibrary::vector3f barycentric(const MathLibrary::vector2f& A,const MathLibra
 void triangle(std::vector<MathLibrary::vector4f> points, IShader& shader, TGAImage& image, TGAImage& zbuffer)
 {
     MathLibrary::vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-    MathLibrary::vector2f bboxmax(std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+    MathLibrary::vector2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
     for (int i = 0; i < 3; ++i)
     {
         for (int j = 0; j < 2; ++j)
@@ -81,7 +81,7 @@ void triangle(std::vector<MathLibrary::vector4f> points, IShader& shader, TGAIma
             float z = MathLibrary::vector3f(points[0][2], points[1][2], points[2][2]) * c;
             float w = MathLibrary::vector3f(points[0][3], points[1][3], points[2][3]) * c;
             int frag_depth = (int)std::fmax(0, std::fmin(255, int(z / w + 0.5f)));
-            if (c.x < 0 || c.y < 0 || c.z<0 || zbuffer.get(P.x, P.y)[0]>frag_depth)
+            if (c.x < 0 || c.y < 0 || c.z<0 || zbuffer.get(P.x, P.y)[0]<frag_depth)
             {
                 continue;
             }
@@ -89,7 +89,7 @@ void triangle(std::vector<MathLibrary::vector4f> points, IShader& shader, TGAIma
             if (!discard)
             {
                 zbuffer.set(P.x, P.y, TGAColor(frag_depth));
-                image.set(P.x, P.y, color);
+                assert(image.set(P.x, P.y, color));
             }
         }
     }
