@@ -6,7 +6,7 @@
 
 using namespace MathLibrary;
 
-Model::Model(const char* filename) : verts_(), faces_(), norms_(), uv_(),diffusemap_() {
+Model::Model(const char* filename) : verts_(), faces_(), norms_(), uv_(), diffusemap_(), normalmap_(), specularmap_() {
     std::ifstream in;
     in.open(filename, std::ifstream::in);
     if (in.fail()) return;
@@ -46,6 +46,8 @@ Model::Model(const char* filename) : verts_(), faces_(), norms_(), uv_(),diffuse
     }
     std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << " vt# " << uv_.size() << " vn# " << norms_.size() << std::endl;
     load_texture(filename, "_diffuse.tga", diffusemap_);
+    load_texture(filename, "_nm.tga", normalmap_);
+    load_texture(filename, "_spec.tga", specularmap_);
 }
 
 Model::~Model() {
@@ -69,6 +71,11 @@ vector3f Model::vert(int i) {
     return verts_[i];
 }
 
+vector3f Model::vert(int iface, int nthvert)
+{
+    return verts_[faces_[iface][nthvert][0]];
+}
+
 void Model::load_texture(std::string filename, const char* suffix, TGAImage& img) {
     std::string texfile(filename);
     size_t dot = texfile.find_last_of(".");
@@ -79,17 +86,37 @@ void Model::load_texture(std::string filename, const char* suffix, TGAImage& img
     }
 }
 
-TGAColor Model::diffuse(vector2i uv) {
-    return diffusemap_.get(uv.x, uv.y);
+TGAColor Model::diffuse(vector2f uv) 
+{
+    vector2i uvi(uv[0] * diffusemap_.get_width(), uv[1] * diffusemap_.get_height());
+    return diffusemap_.get(uvi.x, uvi.y);
 }
 
-vector2i Model::uv(int iface, int nvert) {
-    int idx = faces_[iface][nvert][1];
-    return vector2i(uv_[idx].x * diffusemap_.get_width(), uv_[idx].y * diffusemap_.get_height());
+float Model::specular(MathLibrary::vector2f uv)
+{
+    vector2i uvi(uv[0] * specularmap_.get_width(), uv[1] * specularmap_.get_height());
+    return specularmap_.get(uvi[0], uvi[1])[0] / 1.0f;
+}
+
+vector2f Model::uv(int iface, int nvert) 
+{
+    return uv_[faces_[iface][nvert][1]];
 }
 
 vector3f Model::norm(int iface, int nvert)
 {
     int idx = faces_[iface][nvert][2];
     return norms_[idx].normalize();
+}
+
+vector3f Model::norm(MathLibrary::vector2f uv)
+{
+    vector2i uvi(uv[0] * normalmap_.get_width(), uv[1] * normalmap_.get_height());
+    TGAColor c = normalmap_.get(uvi[0], uvi[1]);
+    vector3f res;
+    for (int i = 0; i < 3; ++i)
+    {
+        res[2 - i] = (float)c[i] / 255.0f * 2.0f - 1.0f;
+    }
+    return res;
 }
